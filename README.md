@@ -23,4 +23,4 @@
     - View template
     - Add foods or meals into the journal
 - User management
-- Unit and integration testing
+- Unit and integration testing 
