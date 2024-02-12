@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" th:href="@{/style.css}"/>
+    <title>Nová potravina</title>
+</head>
+<body>
+<div class="container p-3 my-5">
+    <h1 class="display-5 border-bottom">Přidej novou porci k potravině</h1>
+    <div class="row mt-3 mb-3 d-flex justify-content-start">
+        <div class="col-md-3">
+            <a class="btn btn-secondary w-100" th:href="@{/listFoods}" th:text="'Go Back'">Go Back</a>
+        </div>
+    </div>
+
+    <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+    <div class="alert alert-success" th:if="${successMessage}" th:text="${successMessage}"></div>
+
+    <div class="row mt-3">
+        <div class="col-md-12 form-group">
+            <label for="name">Název potraviny</label>
+            <input type="text" id="name" name="name" class="form-control" th:value="${food.getName()}" disabled
+                   th:style="'background-color: white;'"/>
+        </div>
+    </div>
+
+    <table class="mt-2 table table-hover">
+        <thead class="table-secondary">
+        <tr>
+            <th th:style="'border-top-left-radius: 5px;'">Název porce</th>
+            <th>Gramáž</th>
+            <th th:style="'border-top-right-radius: 5px;'"></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="portion : ${portions}">
+            <td th:text="${portion.getPortionName()}"></td>
+            <td th:text="${portion.getPortionSize()}"></td>
+            <td class="d-flex justify-content-end">
+                <form th:action="@{/food/{foodId}/portion/{id}/delete(foodId=${food.getId()}, id=${portion.getId()})}"
+                      th:method="post">
+                    <input type="submit" value="Delete" class="btn btn-danger">
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <form th:action="@{/food/{id}/portion(id=${food.getId()})}" th:method="post" th:object="${portion}"
+          class="was-validated pt-3">
+        <div class="row mt-3">
+            <div class="col-md-3 form-group">
+                <label for="portionName">Název porce</label>
+                <input type="text" id="portionName" name="portionName" class="form-control" th:field="*{portionName}"
+                       maxlength="55" required pattern=".*\S+.*"/>
+                <div class="invalid-feedback">Pole název nesmí být prázdné nebo obsahovat jen mezery.</div>
+            </div>
+
+            <div class="col-md-3 form-group">
+                <label for="portionSize">Množství [g]</label>
+                <input type="number" id="portionSize" name="portionSize" class="form-control" th:field="*{portionSize}"
+                       step="0.01" oninvalid="this.setCustomValidity(' ')" required/>
+                <div class="invalid-feedback">Zadejte číslo, volitelně s tečkou na 2 desetinná místa.</div>
+            </div>
+        </div>
+        <div class="row mt-4 d-flex justify-content-between">
+            <div class="col-md-3">
+                <button type="reset" class="btn btn-warning w-100">Reset</button>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-success w-100">Submit</button>
+            </div>
+        </div>
+    </form>
+</div>
+</body>
+</html>

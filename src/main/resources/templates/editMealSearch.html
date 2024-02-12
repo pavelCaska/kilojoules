@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" th:href="@{/style.css}"/>
+    <title>Manage Meals</title>
+</head>
+<body>
+<div class="container p-3 my-5">
+    <h1 class="display-5 border-bottom">Edituj jídlo</h1>
+
+    <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+    <div class="alert alert-success" th:if="${successMessage}" th:text="${successMessage}"></div>
+
+    <div class="row mt-3 mb-3">
+        <div class="col-md-12">
+            <h2 th:text="${mealDTO.getMealName()}"></h2>
+            <table class="table table-striped">
+                <thead class="table-secondary">
+                <tr>
+                    <th class="col-center"></th>
+                    <th class="col-center">Quantity</th>
+                    <th class="col-center">Kilojoules</th>
+                    <th class="col-center">Proteins</th>
+                    <th class="col-center">Carbohydrates</th>
+                    <th class="col-center">Fiber</th>
+                    <th class="col-center">Fat</th>
+                    <th class="col-center"></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td class="col-left">Celkem - z toho</td>
+                    <td class="col-right" th:text="${mealDTO.getSumQuantity()}">SumQuantity</td>
+                    <td class="col-right" th:text="${mealDTO.getSumAdjustedKiloJoules()}">SumAdjustedKilojoules</td>
+                    <td class="col-right" th:text="${mealDTO.getSumAdjustedProteins()}">SumAdjustedProteins</td>
+                    <td class="col-right" th:text="${mealDTO.getSumAdjustedCarbohydrates()}">SumAdjustedCarbohydrates
+                    </td>
+                    <td class="col-right" th:text="${mealDTO.getSumAdjustedFiber()}">SumAdjustedFiber</td>
+                    <td class="col-right" th:text="${mealDTO.getSumAdjustedFat()}">SumAdjustedFat</td>
+                    <td></td>
+                </tr>
+                <tr th:each="adjustedFood : ${mealDTO.getMealFoodsDTO()}">
+                    <td class="col-left" th:text="${adjustedFood.getFoodName()}"></td>
+                    <td class="col-right" th:text="${adjustedFood.getQuantity()}"></td>
+                    <td class="col-right" th:text="${adjustedFood.getAdjustedKiloJoules()}"></td>
+                    <td class="col-right" th:text="${adjustedFood.getAdjustedProteins()}"></td>
+                    <td class="col-right" th:text="${adjustedFood.getAdjustedCarbohydrates()}"></td>
+                    <td class="col-right" th:text="${adjustedFood.getAdjustedFiber()}"></td>
+                    <td class="col-right" th:text="${adjustedFood.getAdjustedFat()}"></td>
+                    <td class="col-right">
+                        <form th:action="@{/meal/{mealId}/food/{id}/delete(mealId=${mealDTO.getMealId()}, id=${adjustedFood.getFoodId()})}"
+                              th:method="post">
+                            <input type="submit" value="Delete" class="btn btn-danger">
+                        </form>
+
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <form th:action="@{/meal/{id}/foodSearch(id=${mealDTO.getMealId()})}" th:method="get">
+        <label for="foodSearch">Vyhledej potravinu</label>
+        <div class="input-group mb-3">
+            <input type="text" id="foodSearch" name="query" class="form-control" th:value="${query}" maxlength="75"
+                   required pattern=".*\S+.*"/>
+            <input type="submit" value="Search" class="btn btn-primary">
+            <input type="reset" value="Reset" class="btn btn-secondary">
+        </div>
+    </form>
+
+    <form th:action="@{/meal/{id}/edit(id=${mealDTO.getMealId()})}" th:method="post" class="was-validated pt-3">
+        <div class="row mt-3 d-flex justify-content-evenly">
+            <div class="col-md-6 form-group">
+                <label for="foods">Foods for Meal</label>
+                <select id="foods" name="foods" class="form-control" size="3" required
+                        onchange="fetchPortions(this.value)">
+                    <option th:each="food : ${foods}" th:value="${food.id}" th:text="${food.name}"></option>
+                </select>
+                <div class="invalid-feedback">Please select food.</div>
+            </div>
+            <div class="col-md-3 form-group">
+                <label for="portions">Portion</label>
+                <select id="portions" name="portionSize" class="form-control" size="3" required>
+                    <option th:each="portion : ${portions}" th:value="${portion.portionSize}"
+                            th:text="${portion.portionName}"></option>
+                    <!-- Options will be populated by JavaScript -->
+                </select>
+                <div class="invalid-feedback">Please select the portion unit.</div>
+            </div>
+            <div class="col-md-3 form-group">
+                <label for="quantity">Quantity</label>
+                <input type="number" id="quantity" name="quantity" class="form-control" step="0.01" required/>
+                <div class="invalid-feedback">Please provide the quantity.</div>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-md-3 form-group">
+                <label for="mealName">Název jídla</label>
+                <input type="text" id="mealName" name="mealName" class="form-control"
+                       th:value="${mealDTO.getMealName()}" maxlength="75" required pattern=".*\S+.*"/>
+                <div class="invalid-feedback">Pole název nesmí být prázdné nebo obsahovat jen mezery.</div>
+            </div>
+        </div>
+
+        <div class="row mt-4 d-flex justify-content-between">
+            <div class="col-md-3">
+                <a class="btn btn-secondary w-100" th:href="@{/meal/list}" th:text="'Go Back'">Go Back</a>
+            </div>
+            <div class="col-md-3">
+                <button type="reset" class="btn btn-warning w-100">Reset</button>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-success w-100">Submit</button>
+            </div>
+        </div>
+    </form>
+</div>
+<script>
+    function fetchPortions(foodId) {
+        fetch("/getPortions?foodId=" + foodId)
+            .then(response => response.json())
+            .then(data => {
+                var portionsSelect = document.getElementById('portions');
+
+                while (portionsSelect.firstChild) {
+                    portionsSelect.removeChild(portionsSelect.firstChild);
+                }
+
+                data.forEach(function (portion) {
+                    var option = new Option(portion.portionName, portion.portionSize);
+                    portionsSelect.add(option);
+                });
+            });
+    }
+</script>
+</body>
+</html>
