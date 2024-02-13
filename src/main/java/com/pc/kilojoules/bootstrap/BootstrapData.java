@@ -194,7 +194,7 @@ public class BootstrapData implements CommandLineRunner {
 
         MealFood mealFoodCibule = MealFood.builder()
                 .meal(vejceSCibuli)
-                .food(foodRepository.findById(12L).orElseThrow())
+                .food(foodRepository.findById(9L).orElseThrow())
                 .quantity(BigDecimal.valueOf(70))
                 .build();
         mealFoodRepository.save(mealFoodCibule);
