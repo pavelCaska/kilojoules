@@ -2,6 +2,9 @@ package com.pc.kilojoules.services;
 
 import com.pc.kilojoules.entities.Food;
 import com.pc.kilojoules.repositories.FoodRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -49,4 +52,11 @@ public class FoodServiceImpl implements FoodService {
     public List<Food> searchFood(String query) {
         return foodRepository.findAllByNameContainsIgnoreCase(query);
     }
+
+    @Override
+    public Page<Food> getFoodsByPage(int page) {
+        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "updatedAt")); // 10 foods per page
+        return foodRepository.findAll(pageable);
+    }
+
 }

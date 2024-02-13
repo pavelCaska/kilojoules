@@ -5,14 +5,14 @@ import com.pc.kilojoules.entities.Portion;
 import com.pc.kilojoules.services.FoodService;
 import com.pc.kilojoules.services.PortionService;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
@@ -25,6 +25,7 @@ public class FoodController {
 
     private final FoodService foodService;
     private final PortionService portionService;
+    private static final Logger log = LoggerFactory.getLogger(FoodController.class);
 
     public FoodController(FoodService foodService, PortionService portionService) {
         this.foodService = foodService;
@@ -32,11 +33,35 @@ public class FoodController {
     }
 
     @GetMapping({"/", "/listFoods"})
-    public String getFoods(Model model) {
+    public String getFoodsPaged(
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            Model model,
+            RedirectAttributes redirectAttributes) {
+        try {
+            page = Math.max(page, 0);
 
-        model.addAttribute("foods", foodService.findAllByUpdatedDesc());
+            Page<Food> foodsPage = foodService.getFoodsByPage(page);
+            int totalPages = foodsPage.getTotalPages();
 
-        return "listFoods";
+            if (page >= totalPages) {
+                page = totalPages - 1;
+                foodsPage = foodService.getFoodsByPage(page);
+            }
+
+            model.addAttribute("foods", foodsPage.getContent());
+            model.addAttribute("currentPage", page);
+            model.addAttribute("totalPages", totalPages);
+            redirectAttributes.addAttribute("currentPage", page);
+            return "listFoods";
+        } catch (DataAccessException e) {
+            log.error("Database access error:", e);
+            model.addAttribute("errorMessage", "Error accessing data. Please try again later.");
+            return "listFoods";
+        } catch (Exception e) {
+            log.error("Unexpected error:", e);
+            model.addAttribute("errorMessage", "Something went wrong!");
+            return "listFoods";
+        }
     }
 
     @GetMapping("/food/{id}/edit")

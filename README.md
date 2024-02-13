@@ -14,10 +14,10 @@
 - Create, edit, delete, list foods
 - Create, edit, delete portions
 - Create, edit, delete, list meals
+- Pagination for FoodList
 
 ## Next Steps:
 
-- Pagination for FoodList
 - Journal
     - Set up table, relationship
     - View template
