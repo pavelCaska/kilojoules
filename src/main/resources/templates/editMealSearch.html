@@ -45,7 +45,9 @@
                     <td></td>
                 </tr>
                 <tr th:each="adjustedFood : ${mealDTO.getMealFoodsDTO()}">
-                    <td class="col-left" th:text="${adjustedFood.getFoodName()}"></td>
+                    <td class="col-left">
+                        <a th:href="@{/meal/{mealId}/food/{id}/edit(mealId=${mealDTO.getMealId()}, id=${adjustedFood.getFoodId()})}" th:text="${adjustedFood.getFoodName()}"></a>
+                    </td>
                     <td class="col-right" th:text="${adjustedFood.getQuantity()}"></td>
                     <td class="col-right" th:text="${adjustedFood.getAdjustedKiloJoules()}"></td>
                     <td class="col-right" th:text="${adjustedFood.getAdjustedProteins()}"></td>
@@ -65,17 +67,13 @@
         </div>
     </div>
 
+
     <form th:action="@{/meal/{id}/foodSearch(id=${mealDTO.getMealId()})}" th:method="get">
-        <label for="foodSearch">Vyhledej potravinu</label>
-        <div class="input-group mb-3">
-            <input type="text" id="foodSearch" name="query" class="form-control" th:value="${query}" maxlength="75"
-                   required pattern=".*\S+.*"/>
-            <input type="submit" value="Search" class="btn btn-primary">
-            <input type="reset" value="Reset" class="btn btn-secondary">
-        </div>
+        <div th:insert="~{fragments/foodSearch :: foodSearchFragment}"></div>
     </form>
 
-    <form th:action="@{/meal/{id}/edit(id=${mealDTO.getMealId()})}" th:method="post" class="was-validated pt-3">
+    <form th:action="@{/meal/{id}/edit(id=${mealDTO.getMealId()})}" th:method="post" class="was-validated pt-3"
+          onreset="resetFoodsAndPortions()">
         <div class="row mt-3 d-flex justify-content-evenly">
             <div class="col-md-6 form-group">
                 <label for="foods">Foods for Meal</label>
@@ -103,6 +101,7 @@
         <div class="row mt-3">
             <div class="col-md-3 form-group">
                 <label for="mealName">Název jídla</label>
+                <!--                <input type="text" id="mealName" name="mealName" class="form-control" th:value="${mealNameValue}" maxlength="75" required pattern=".*\S+.*"/>-->
                 <input type="text" id="mealName" name="mealName" class="form-control"
                        th:value="${mealDTO.getMealName()}" maxlength="75" required pattern=".*\S+.*"/>
                 <div class="invalid-feedback">Pole název nesmí být prázdné nebo obsahovat jen mezery.</div>
@@ -124,20 +123,33 @@
 </div>
 <script>
     function fetchPortions(foodId) {
-        fetch("/getPortions?foodId=" + foodId)
+        fetch("/api/getPortions?foodId=" + foodId)
             .then(response => response.json())
             .then(data => {
-                var portionsSelect = document.getElementById('portions');
+                // Get the portions dropdown
+                let portionsSelect = document.getElementById('portions');
 
+                // Clear the current options
                 while (portionsSelect.firstChild) {
                     portionsSelect.removeChild(portionsSelect.firstChild);
                 }
 
+                // Add new options
                 data.forEach(function (portion) {
-                    var option = new Option(portion.portionName, portion.portionSize);
+                    let option = new Option(portion.portionName, portion.portionSize);
                     portionsSelect.add(option);
                 });
             });
+    }
+    function resetFoodsAndPortions() {
+            let foodSelect = document.getElementById('foods');
+            let portionsSelect = document.getElementById('portions');
+            while (foodSelect.firstChild) {
+                foodSelect.removeChild(foodSelect.firstChild);
+            }
+            while (portionsSelect.firstChild) {
+                portionsSelect.removeChild(portionsSelect.firstChild);
+            }
     }
 </script>
 </body>

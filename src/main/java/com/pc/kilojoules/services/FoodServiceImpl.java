@@ -25,6 +25,12 @@ public class FoodServiceImpl implements FoodService {
     }
 
     @Override
+    public Page<Food> getFoodsByPage(int page) {
+        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "updatedAt")); // 10 foods per page
+        return foodRepository.findAll(pageable);
+    }
+
+    @Override
     public Food findById(Long id) {
         return foodRepository.findById(id).orElseThrow();
     }
@@ -52,11 +58,4 @@ public class FoodServiceImpl implements FoodService {
     public List<Food> searchFood(String query) {
         return foodRepository.findAllByNameContainsIgnoreCase(query);
     }
-
-    @Override
-    public Page<Food> getFoodsByPage(int page) {
-        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "updatedAt")); // 10 foods per page
-        return foodRepository.findAll(pageable);
-    }
-
 }

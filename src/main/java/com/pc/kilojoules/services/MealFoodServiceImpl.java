@@ -24,4 +24,8 @@ public class MealFoodServiceImpl implements MealFoodService {
     public void deleteMealFoodByMealIdAndFoodId(Long mealId, Long foodId) {
         mealFoodRepository.deleteMealFoodByMealIdAndFoodId(mealId, foodId);
     }
+    @Override
+    public MealFood findMealFoodByMealIdAndFoodId(Long mealId, Long foodId) {
+        return mealFoodRepository.findMealFoodByMealIdAndFoodId(mealId, foodId).orElseThrow();
+    }
 }

@@ -32,11 +32,7 @@ public class MealServiceImpl implements MealService {
     }
 
     @Override
-    public Meal findMealById(Long id) {
-        return mealRepository.findById(id).orElse(null);
-    }
-    @Override
-    public Meal findMealByIdOrThrow(Long id) {
+    public Meal getMealById(Long id) {
         return mealRepository.findById(id).orElseThrow();
     }
 
@@ -88,7 +84,8 @@ public class MealServiceImpl implements MealService {
     }
     @Override
     public MealDTO calculateAndReturnMealDto(Long id) {
-        Meal meal = findMealById(id);
+
+        Meal meal = getMealById(id);
 
             MealDTO mealDTO = new MealDTO();
             mealDTO.setMealName(meal.getMealName());

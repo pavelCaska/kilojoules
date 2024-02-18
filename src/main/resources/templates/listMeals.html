@@ -39,23 +39,22 @@
             </tr>
             </thead>
             <tbody>
-            <tr th:each="mealDTO : ${mealsDTO}">
-                <td>
-                    <a th:href="@{'/meal/' + ${mealDTO.getMealId()} + '/edit'}"
-                       th:text="${mealDTO.getMealName()}">name</a>
-                </td>
-                <td class="col-right" th:text="${mealDTO.getSumQuantity()}">SumQuantity</td>
-                <td class="col-right" th:text="${mealDTO.getSumAdjustedKiloJoules()}">SumAdjustedKilojoules</td>
-                <td class="col-right" th:text="${mealDTO.getSumAdjustedProteins()}">SumAdjustedProteins</td>
-                <td class="col-right" th:text="${mealDTO.getSumAdjustedCarbohydrates()}">SumAdjustedCarbohydrates</td>
-                <td class="col-right" th:text="${mealDTO.getSumAdjustedFiber()}">SumAdjustedFiber</td>
-                <td class="col-right" th:text="${mealDTO.getSumAdjustedFat()}">SumAdjustedFat</td>
-                <td class="col-center">
-                    <form th:action="@{/meal/{id}/delete(id=${mealDTO.getMealId()})}" th:method="post">
-                        <input type="submit" value="Delete" class="btn btn-danger">
-                    </form>
-                </td>
-            </tr>
+                <tr th:each="mealDTO : ${mealsDTO}">
+                    <td>
+                        <a th:href="@{'/meal/' + ${mealDTO.getMealId()} + '/edit'}" th:text="${mealDTO.getMealName()}">name</a>
+                    </td>
+                    <td class="col-right" th:text="${mealDTO.getSumQuantity()}">SumQuantity</td>
+                    <td class="col-right" th:text="${mealDTO.getSumAdjustedKiloJoules()}">SumAdjustedKilojoules</td>
+                    <td class="col-right" th:text="${mealDTO.getSumAdjustedProteins()}">SumAdjustedProteins</td>
+                    <td class="col-right" th:text="${mealDTO.getSumAdjustedCarbohydrates()}">SumAdjustedCarbohydrates</td>
+                    <td class="col-right" th:text="${mealDTO.getSumAdjustedFiber()}">SumAdjustedFiber</td>
+                    <td class="col-right" th:text="${mealDTO.getSumAdjustedFat()}">SumAdjustedFat</td>
+                    <td class="col-center">
+                        <form th:action="@{/meal/{id}/delete(id=${mealDTO.getMealId()})}"  th:method="post">
+                            <input type="submit" value="Delete" class="btn btn-danger">
+                        </form>
+                    </td>
+                </tr>
             </tbody>
         </table>
     </div>

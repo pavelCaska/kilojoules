@@ -10,10 +10,8 @@ public interface MealService {
 
     List<Meal> getAllMeals();
 
-    Meal findMealById(Long id);
 
-
-    Meal findMealByIdOrThrow(Long id);
+    Meal getMealById(Long id);
 
     List<MealDTO> calculateAndReturnMealDtoList();
 

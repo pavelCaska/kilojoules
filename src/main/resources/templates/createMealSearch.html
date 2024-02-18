@@ -12,26 +12,17 @@
 <body>
 <div class="container p-3 my-5">
     <h1 class="display-5 border-bottom">Přidej nové jídlo</h1>
-    <div class="row mt-3 mb-3 d-flex justify-content-start">
-        <div class="col-md-3">
-            <a class="btn btn-secondary w-100" th:href="@{/listFoods}" th:text="'Go Back'">Go Back</a>
-        </div>
-    </div>
 
     <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
     <div class="alert alert-success" th:if="${successMessage}" th:text="${successMessage}"></div>
 
+
     <form th:action="@{/meal/foodSearch}" th:method="get">
-        <label for="foodSearch">Vyhledej potravinu</label>
-        <div class="input-group mb-3">
-            <input type="text" id="foodSearch" name="query" class="form-control" th:value="${query}" maxlength="75"
-                   required pattern=".*\S+.*"/>
-            <input type="submit" value="Search" class="btn btn-primary">
-            <input type="reset" value="Reset" class="btn btn-secondary">
-        </div>
+        <div th:insert="~{fragments/foodSearch :: foodSearchFragment}"></div>
     </form>
 
-    <form th:action="@{/meal/create}" th:method="post" th:object="${mealFormDTO}" class="was-validated pt-3">
+    <form th:action="@{/meal/create}" th:method="post" th:object="${mealFormDTO}" class="was-validated pt-3" onreset="resetFoodsAndPortions()">
+
         <div class="row mt-3 d-flex justify-content-evenly">
             <div class="col-md-6 form-group">
                 <label for="foods">Foods for Meal</label>
@@ -63,6 +54,9 @@
         </div>
         <div class="row mt-4 d-flex justify-content-between">
             <div class="col-md-3">
+                <a class="btn btn-secondary w-100" th:href="@{/meal/list}" th:text="'Go Back'">Go Back</a>
+            </div>
+            <div class="col-md-3">
                 <button type="reset" class="btn btn-warning w-100">Reset</button>
             </div>
             <div class="col-md-3">
@@ -73,20 +67,30 @@
 </div>
 <script>
     function fetchPortions(foodId) {
-        fetch("/getPortions?foodId=" + foodId)
+        fetch("/api/getPortions?foodId=" + foodId)
             .then(response => response.json())
             .then(data => {
-                var portionsSelect = document.getElementById('portions');
+                let portionsSelect = document.getElementById('portions');
 
                 while (portionsSelect.firstChild) {
                     portionsSelect.removeChild(portionsSelect.firstChild);
                 }
 
                 data.forEach(function(portion) {
-                    var option = new Option(portion.portionName, portion.portionSize);
+                    let option = new Option(portion.portionName, portion.portionSize);
                     portionsSelect.add(option);
                 });
             });
+    }
+    function resetFoodsAndPortions() {
+        let foodSelect = document.getElementById('foods');
+        let portionsSelect = document.getElementById('portions');
+        while (foodSelect.firstChild) {
+            foodSelect.removeChild(foodSelect.firstChild);
+        }
+        while (portionsSelect.firstChild) {
+            portionsSelect.removeChild(portionsSelect.firstChild);
+        }
     }
 </script>
 </body>
