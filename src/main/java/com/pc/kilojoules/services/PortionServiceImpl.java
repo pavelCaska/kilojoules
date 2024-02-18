@@ -3,6 +3,7 @@ package com.pc.kilojoules.services;
 import com.pc.kilojoules.entities.Food;
 import com.pc.kilojoules.entities.Portion;
 import com.pc.kilojoules.repositories.PortionRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,6 +13,7 @@ public class PortionServiceImpl implements PortionService {
 
     private final PortionRepository portionRepository;
 
+    @Autowired
     public PortionServiceImpl(PortionRepository portionRepository) {
         this.portionRepository = portionRepository;
     }

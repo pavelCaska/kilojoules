@@ -5,6 +5,7 @@ import com.pc.kilojoules.entities.Portion;
 import com.pc.kilojoules.services.FoodService;
 import com.pc.kilojoules.services.PortionService;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,6 +24,7 @@ public class PortionController {
     private final PortionService portionService;
     private final FoodService foodService;
 
+    @Autowired
     public PortionController(PortionService portionService, FoodService foodService) {
         this.portionService = portionService;
         this.foodService = foodService;

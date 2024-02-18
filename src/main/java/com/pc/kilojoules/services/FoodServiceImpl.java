@@ -2,6 +2,7 @@ package com.pc.kilojoules.services;
 
 import com.pc.kilojoules.entities.Food;
 import com.pc.kilojoules.repositories.FoodRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -15,6 +16,7 @@ import java.util.List;
 public class FoodServiceImpl implements FoodService {
     private final FoodRepository foodRepository;
 
+    @Autowired
     public FoodServiceImpl(FoodRepository foodRepository) {
         this.foodRepository = foodRepository;
     }
@@ -22,6 +24,12 @@ public class FoodServiceImpl implements FoodService {
     @Override
     public List<Food> findAllByUpdatedDesc() {
         return foodRepository.findAll(Sort.by(Sort.Direction.DESC, "updatedAt"));
+    }
+
+    @Override
+    public Page<Food> getFoodsByPage(int page) {
+        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "updatedAt")); // 10 foods per page
+        return foodRepository.findAll(pageable);
     }
 
     @Override
@@ -52,11 +60,4 @@ public class FoodServiceImpl implements FoodService {
     public List<Food> searchFood(String query) {
         return foodRepository.findAllByNameContainsIgnoreCase(query);
     }
-
-    @Override
-    public Page<Food> getFoodsByPage(int page) {
-        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "updatedAt")); // 10 foods per page
-        return foodRepository.findAll(pageable);
-    }
-
 }

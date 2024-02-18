@@ -10,6 +10,7 @@ import com.pc.kilojoules.repositories.MealFoodRepository;
 import com.pc.kilojoules.repositories.MealRepository;
 import com.pc.kilojoules.repositories.PortionRepository;
 import com.pc.kilojoules.services.FoodCsvService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +32,7 @@ public class BootstrapData implements CommandLineRunner {
     private final MealRepository mealRepository;
     private final MealFoodRepository mealFoodRepository;
 
+    @Autowired
     public BootstrapData(FoodRepository foodRepository, FoodCsvService foodCsvService, PortionRepository portionRepository, MealRepository mealRepository, MealFoodRepository mealFoodRepository) {
         this.foodRepository = foodRepository;
         this.foodCsvService = foodCsvService;

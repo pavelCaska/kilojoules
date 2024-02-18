@@ -4,6 +4,7 @@ import com.pc.kilojoules.entities.Meal;
 import com.pc.kilojoules.models.MealDTO;
 import com.pc.kilojoules.models.MealFoodDTO;
 import com.pc.kilojoules.repositories.MealRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +17,7 @@ public class MealServiceImpl implements MealService {
 
     private final MealRepository mealRepository;
 
+    @Autowired
     public MealServiceImpl(MealRepository mealRepository) {
         this.mealRepository = mealRepository;
     }
@@ -32,11 +34,7 @@ public class MealServiceImpl implements MealService {
     }
 
     @Override
-    public Meal findMealById(Long id) {
-        return mealRepository.findById(id).orElse(null);
-    }
-    @Override
-    public Meal findMealByIdOrThrow(Long id) {
+    public Meal getMealById(Long id) {
         return mealRepository.findById(id).orElseThrow();
     }
 
@@ -88,7 +86,8 @@ public class MealServiceImpl implements MealService {
     }
     @Override
     public MealDTO calculateAndReturnMealDto(Long id) {
-        Meal meal = findMealById(id);
+
+        Meal meal = getMealById(id);
 
             MealDTO mealDTO = new MealDTO();
             mealDTO.setMealName(meal.getMealName());

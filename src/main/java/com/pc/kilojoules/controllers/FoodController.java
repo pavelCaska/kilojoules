@@ -7,6 +7,7 @@ import com.pc.kilojoules.services.PortionService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
@@ -27,6 +28,7 @@ public class FoodController {
     private final PortionService portionService;
     private static final Logger log = LoggerFactory.getLogger(FoodController.class);
 
+    @Autowired
     public FoodController(FoodService foodService, PortionService portionService) {
         this.foodService = foodService;
         this.portionService = portionService;
