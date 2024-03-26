@@ -7,122 +7,18 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" th:href="@{/style.css}"/>
-    <title>Nová potravina</title>
+    <title>Food</title>
 </head>
 <body>
 <div class="container p-3 my-5">
-    <h1 class="display-5 border-bottom">Přidej novou potravinu</h1>
-    <div class="row mt-3 d-flex justify-content-start">
-        <div class="col-md-3">
-            <a class="btn btn-secondary w-100" th:href="@{/listFoods}" th:text="'Go Back'">Go Back</a>
-        </div>
-    </div>
+    <h1 class="display-5 border-bottom">Add new food item</h1>
 
-    <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+    <div th:insert="~{fragments/messages :: messagesFragment}"></div>
+
     <form th:action="@{/food/create}" th:method="post" th:object="${food}" class="was-validated pt-3">
 
-        <div class="row mt-3">
-            <div class="col-md-12 form-group">
-                <label for="name">Název</label>
-                <input type="text" id="name" name="name" class="form-control" th:field="*{name}" maxlength="255"
-                       required pattern=".*\S+.*"/>
-                <div class="invalid-feedback">Pole název nesmí být prázdné nebo obsahovat jen mezery.</div>
-            </div>
-        </div>
-        <div class="row mt-3">
-            <div class="col-md-3 form-group">
-                <label for="amount">Množství [g]</label>
-                <input type="number" id="amount" name="amount" class="form-control" th:field="*{amount}" step="0.01"
-                       oninvalid="this.setCustomValidity(' ')" required/>
-                <div class="invalid-feedback">Zadejte číslo, volitelně s tečkou na 2 desetinná místa.</div>
-            </div>
-            <div class="col-md-3 form-group">
-                <label for="kiloJoules">kJ</label>
-                <input type="number" id="kiloJoules" name="kiloJoules" class="form-control" th:field="*{kiloJoules}"
-                       step="0.01" oninvalid="this.setCustomValidity(' ')" required/>
-                <div class="invalid-feedback">Zadejte číslo, volitelně s tečkou na 2 desetinná místa.</div>
-            </div>
-        </div>
-        <div class="row mt-3">
-            <div class="col-md-3 form-group">
-                <label for="proteins">Bílkoviny [g]</label>
-                <input type="number" id="proteins" name="proteins" class="form-control" th:field="*{proteins}"
-                       step="0.01" oninvalid="this.setCustomValidity(' ')" required/>
-                <div class="invalid-feedback">Zadejte číslo, volitelně s tečkou na 2 desetinná místa.</div>
-            </div>
-            <div class="col-md-3 form-group">
-                <label for="carbohydrates">Sacharidy [g]</label>
-                <input type="number" id="carbohydrates" name="carbohydrates" class="form-control"
-                       th:field="*{carbohydrates}" step="0.01" oninvalid="this.setCustomValidity(' ')" required/>
-                <div class="invalid-feedback">Zadejte číslo, volitelně s tečkou na 2 desetinná místa.</div>
-            </div>
-            <div class="col-md-3 form-group">
-                <label for="sugar">Cukry [g]</label><br>
-                <input type="number" id="sugar" name="sugar" class="form-control" th:field="*{sugar}" step="0.01"
-                       oninvalid="this.setCustomValidity(' ')"/>
-                <div class="invalid-feedback">Zadejte číslo, volitelně s tečkou na 2 desetinná místa.</div>
-            </div>
-            <div class="col-md-3 form-group">
-                <label for="fiber">Vláknina [g]</label>
-                <input type="number" id="fiber" name="fiber" class="form-control" th:field="*{fiber}" step="0.01"
-                       oninvalid="this.setCustomValidity(' ')"/>
-                <div class="invalid-feedback">Zadejte číslo, volitelně s tečkou na 2 desetinná místa.</div>
-            </div>
-        </div>
-        <div class="row mt-3">
-            <div class="col-md-3 form-group">
-                <label for="fat">Tuky [g]</label>
-                <input type="number" id="fat" name="fat" class="form-control" th:field="*{fat}" step="0.01"
-                       oninvalid="this.setCustomValidity(' ')" required/>
-                <div class="invalid-feedback">Zadejte číslo, volitelně s tečkou na 2 desetinná místa.</div>
-            </div>
-            <div class="col-md-3 form-group">
-                <label for="safa">Nasycené mastné kyseliny [g]</label>
-                <input type="number" id="safa" name="safa" class="form-control" th:field="*{safa}" step="0.01"
-                       oninvalid="this.setCustomValidity(' ')"/>
-                <div class="invalid-feedback">Zadejte číslo, volitelně s tečkou na 2 desetinná místa.</div>
-            </div>
-            <div class="col-md-3 form-group">
-                <label for="tfa">Trans mastné kyseliny [g]</label>
-                <input type="number" id="tfa" name="tfa" class="form-control" th:field="*{tfa}" step="0.01"
-                       oninvalid="this.setCustomValidity(' ')"/>
-                <div class="invalid-feedback">Zadejte číslo, volitelně s tečkou na 2 desetinná místa.</div>
-            </div>
-            <div class="col-md-3 form-group">
-                <label for="cholesterol">Cholesterol [mg]</label>
-                <input type="number" id="cholesterol" name="cholesterol" class="form-control" th:field="*{cholesterol}"
-                       step="0.01" oninvalid="this.setCustomValidity(' ')"/>
-                <div class="invalid-feedback">Zadejte číslo, volitelně s tečkou na 2 desetinná místa.</div>
-            </div>
-        </div>
-        <div class="row mt-3">
-            <div class="col-md-3 form-group">
-                <label for="sodium">Sodík [mg]</label>
-                <input type="number" id="sodium" name="sodium" class="form-control" th:field="*{sodium}" step="0.01"
-                       oninvalid="this.setCustomValidity(' ')"/>
-                <div class="invalid-feedback">Zadejte číslo, volitelně s tečkou na 2 desetinná místa.</div>
-            </div>
-            <div class="col-md-3 form-group">
-                <label for="calcium">Vápník [g]</label>
-                <input type="number" id="calcium" name="calcium" class="form-control" th:field="*{calcium}" step="0.01"
-                       oninvalid="this.setCustomValidity(' ')"/>
-                <div class="invalid-feedback">Zadejte číslo, volitelně s tečkou na 2 desetinná místa.</div>
-            </div>
-            <div class="col-md-3 form-group">
-                <label for="phe">PHE [mg]</label>
-                <input type="number" id="phe" name="phe" class="form-control" th:field="*{phe}" step="0.01"
-                       oninvalid="this.setCustomValidity(' ')"/>
-                <div class="invalid-feedback">Zadejte číslo, volitelně s tečkou na 2 desetinná místa.</div>
-            </div>
-        </div>
-        <div class="row mt-4 d-flex justify-content-between">
-            <div class="col-md-3">
-                <button type="reset" class="btn btn-warning w-100">Reset</button>
-            </div>
-            <div class="col-md-3">
-                <button type="submit" class="btn btn-success w-100">Submit</button>
-            </div>
-        </div>
+        <div th:insert="~{fragments/foodForm :: foodFormFragment}"></div>
+        <div th:insert="~{fragments/foodButtons :: foodButtonsFragment}"></div>
     </form>
 </div>
 </body>

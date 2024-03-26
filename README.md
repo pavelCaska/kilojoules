@@ -10,17 +10,17 @@
 
 ## Current Development State:
 
+- single user application
 - Populate database with sample data
-- Create, edit, delete, list foods
-- Create, edit, delete portions
-- Create, edit, delete, list meals
-- Pagination for FoodList
+- Create, update, delete, list foods
+- Create, delete portions
+- Create, update, delete, list meals
+- Pagination for food list, meal list
+- Journal
+  - add, update, delete food or meal to/from Journal
+  - show basic & advanced statistics
 
 ## Next Steps:
 
-- Journal
-    - Set up table, relationship
-    - View template
-    - Add foods or meals into the journal
-- User management
+- Spring Security / User management
 - Unit and integration testing 

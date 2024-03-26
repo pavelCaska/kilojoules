@@ -13,8 +13,8 @@ import java.math.BigDecimal;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@RequiredArgsConstructor
 @Builder
-
 
 @Entity
 @Table(name = "portions")
@@ -24,21 +24,19 @@ public class Portion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NonNull
     @NotBlank
     @Size(max = 55)
     private String portionName;
 
+    @NonNull
     @NotNull
     @DecimalMin(value = "0.0", message = "Size must be greater than or equal to zero")
     private BigDecimal portionSize;
 
+    @NonNull
     @ManyToOne
     @JoinColumn(name = "food_id")
     private Food food;
 
-    public Portion(String portionName, BigDecimal portionSize, Food food) {
-        this.portionName = portionName;
-        this.portionSize = portionSize;
-        this.food = food;
-    }
 }

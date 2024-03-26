@@ -2,26 +2,27 @@ package com.pc.kilojoules.controllers;
 
 import com.pc.kilojoules.entities.Food;
 import com.pc.kilojoules.entities.Meal;
-import com.pc.kilojoules.entities.MealFood;
 import com.pc.kilojoules.entities.Portion;
+import com.pc.kilojoules.exceptions.RecordNotFoundException;
 import com.pc.kilojoules.models.MealDTO;
 import com.pc.kilojoules.models.MealFormDTO;
 import com.pc.kilojoules.services.FoodService;
 import com.pc.kilojoules.services.MealFoodService;
 import com.pc.kilojoules.services.MealService;
 import com.pc.kilojoules.services.PortionService;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.math.BigDecimal;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
 
 @Controller
 public class MealController {
@@ -30,6 +31,7 @@ public class MealController {
     private final FoodService foodService;
     private final MealFoodService mealFoodService;
     private final PortionService portionService;
+    private static final Logger log = LoggerFactory.getLogger(MealController.class);
 
     @Autowired
     public MealController(MealService mealService, FoodService foodService, MealFoodService mealFoodService, PortionService portionService) {
@@ -39,113 +41,149 @@ public class MealController {
         this.portionService = portionService;
     }
 
-    @GetMapping("/meal/create")
-    public String createMealGet(Model model, @ModelAttribute ("mealFormDTO") MealFormDTO mealFormDTO) {
-        return "createMealSearch";
-    }
-    @GetMapping("/meal/{id}/edit")
-    public String editMealGet(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
-        try {
-            MealDTO mealDTO = mealService.calculateAndReturnMealDto(id);
-            model.addAttribute("mealDTO", mealDTO);
+    @GetMapping("/meal")
+    public String getMealsPaged(Model model,
+                                @RequestParam(name = "page", defaultValue = "0") int page,
+                                RedirectAttributes redirectAttributes) {
+        page = Math.max(page, 0);
 
-            return "editMealSearch";
-        } catch (NoSuchElementException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Meal not found!");
-            return "redirect:/meal/list";
+        Page<Meal> mealsPage = mealService.getMealsByPage(page);
+        int totalPages = mealsPage.getTotalPages();
+
+        if (page >= totalPages && totalPages != 0) {
+            page = totalPages - 1;
+            mealsPage = mealService.getMealsByPage(page);
+        } else if (totalPages == 0) {
+            model.addAttribute("errorMessage", "No records found.");
         }
-    }
 
-    @GetMapping("/meal/foodSearch")
+        List<Meal> meals = mealsPage.getContent();
+        List<MealDTO> mealsDTO = mealService.calculateAndReturnMealDtoList(meals);
+        model.addAttribute("mealsDTO", mealsDTO);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", totalPages);
+        redirectAttributes.addAttribute("currentPage", page);
+        return "listMeals";
+    }
+    @GetMapping("/meal/food-search")
     public String searchFoodCreateMeal(@RequestParam(name = "query") String query, RedirectAttributes redirectAttributes) {
         List<Food> foods = foodService.searchFood(query);
-        List<Portion> portions = new ArrayList<>();
-        if(!foods.isEmpty()) {
+        if (!foods.isEmpty()) {
             redirectAttributes.addFlashAttribute("query", query);
             redirectAttributes.addFlashAttribute("foods", foods);
-            return "redirect:/meal/create";
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "Food not found!");
         }
-        redirectAttributes.addFlashAttribute("errorMessage", "Food not found!");
         return "redirect:/meal/create";
     }
-    @GetMapping("/meal/{id}/foodSearch")
+    @GetMapping("/meal/{id}/food-search")
     public String searchFoodEditMeal(@PathVariable("id") Long id, @RequestParam(name = "query") String query, RedirectAttributes redirectAttributes) {
         List<Food> foods = foodService.searchFood(query);
-        if(!foods.isEmpty()) {
+        if (!foods.isEmpty()) {
             redirectAttributes.addFlashAttribute("foods", foods);
             redirectAttributes.addFlashAttribute("query", query);
         } else {
             redirectAttributes.addFlashAttribute("errorMessage", "Food not found!");
         }
-        return "redirect:/meal/" + id + "/edit";
+        return "redirect:/meal/" + id + "/food/add";
+    }
+    @GetMapping("/meal/create")
+    public String createMealGet(Model model, @ModelAttribute("mealFormDTO") MealFormDTO mealFormDTO) {
+        return "createMealSearch";
+    }
+
+    @GetMapping("/meal/{id}/edit")
+    public String editMealGet(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            model.addAttribute("mealDTO", mealService.calculateAndReturnMealDto(id));
+            return "editMeal";
+        } catch (RecordNotFoundException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        } catch (DataAccessException e) {
+            log.error("Database access error:", e);
+            redirectAttributes.addFlashAttribute("errorMessage", "Data access error");
+        }
+        return "redirect:/meal";
+    }
+
+    @GetMapping("/meal/{id}/food/add")
+    public String addFoodToMealGet(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            model.addAttribute("mealDTO", mealService.calculateAndReturnMealDto(id));
+            return "editMealSearch";
+        } catch (RecordNotFoundException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        } catch (DataAccessException e) {
+            log.error("Database access error:", e);
+            redirectAttributes.addFlashAttribute("errorMessage", "Data access error");
+        }
+        return "redirect:/meal";
     }
 
     @PostMapping("/meal/create")
-    public String saveMeal(@Valid @ModelAttribute MealFormDTO mealFormDTO,
+    public String createMeal(@Valid @ModelAttribute MealFormDTO mealFormDTO,
                            BindingResult bindingResult,
                            RedirectAttributes redirectAttributes,
                            @RequestParam("foods") List<Long> foods) {
 
         if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Validace selhala! Formulář byl resetován!");
+            redirectAttributes.addFlashAttribute("errorMessage", "Validation failed.");
             return "createMealSearch";
         }
+        try {
+            Meal meal = mealService.createMeal(mealFormDTO, foods);
+            redirectAttributes.addFlashAttribute("successMessage", "Meal created successfully.");
+            return "redirect:/meal/" + meal.getId() + "/edit";
+        } catch (DataAccessException e) {
+            log.error("Database access error:", e);
+            redirectAttributes.addFlashAttribute("errorMessage", "Data access error");
+        }
+        return "redirect:/meal";
+    }
+    @PostMapping("/meal/{id}/food/add")
+    public String addFoodToMealPost(@PathVariable("id") Long id,
+                                    @ModelAttribute MealFormDTO mealFormDTO,
+                                    BindingResult bindingResult,
+                                    RedirectAttributes redirectAttributes,
+                                    @RequestParam("foods") List<Long> foods) {
 
-        Meal meal = Meal.builder()
-                .mealName(mealFormDTO.getMealName())
-                .build();
+        if (bindingResult.hasErrors()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Validation failed.");
+            return "redirect:/meal/" + id + "/edit";
+        }
+        try {
+            Meal meal = mealService.addFoodToMeal(id, mealFormDTO, foods);
+            redirectAttributes.addFlashAttribute("successMessage", meal.getMealName() + " updated successfully.");
 
-        meal = mealService.save(meal);
-
-        final Meal savedMeal = meal;
-        Long mealId = savedMeal.getId();
-        BigDecimal savedQuantity = mealFormDTO.getQuantity().multiply(mealFormDTO.getPortionSize());
-
-        Set<MealFood> mealFoods = foods.stream()
-                .map(foodId -> {
-                    MealFood mf = new MealFood();
-                    mf.setMeal(savedMeal);
-                    mf.setQuantity(savedQuantity);
-                    Food food = foodService.findById(foodId);
-                    mf.setFood(food);
-                    return mealFoodService.save(mf);
-                })
-                .collect(Collectors.toSet());
-        meal.setMealFoods(mealFoods);
-
-        return "redirect:/meal/" + mealId + "/edit";
+        } catch (RecordNotFoundException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        } catch (DataAccessException e) {
+            log.error("Database access error:", e);
+            redirectAttributes.addFlashAttribute("errorMessage", "Data access error");
+        }
+        return "redirect:/meal/" + id + "/edit";
     }
 
     @PostMapping("/meal/{id}/edit")
     public String editMeal(@PathVariable("id") Long id, @ModelAttribute MealFormDTO mealFormDTO,
                            BindingResult bindingResult,
-                           RedirectAttributes redirectAttributes,
-                           @RequestParam("foods") List<Long> foods) {
+                           RedirectAttributes redirectAttributes) {
 
         if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Validace selhala! Formulář byl resetován!");
+            redirectAttributes.addFlashAttribute("errorMessage", "Validation failed.");
             return "redirect:/meal/" + id + "/edit";
         }
 
         try {
-            Meal meal = mealService.getMealById(id);
-            meal.setMealName(mealFormDTO.getMealName());
-            final Meal savedMeal = meal;
-            BigDecimal savedQuantity = mealFormDTO.getQuantity().multiply(mealFormDTO.getPortionSize());
+            Meal meal = mealService.updateMealName(id, mealFormDTO.getMealName());
+            redirectAttributes.addFlashAttribute("successMessage", meal.getMealName() + " updated successfully.");
+            return "redirect:/meal";
 
-            Set<MealFood> mealFoods = foods.stream()
-                    .map(foodId -> {
-                        MealFood mf = new MealFood();
-                        mf.setMeal(savedMeal);
-                        mf.setQuantity(savedQuantity);
-                        Food food = foodService.findById(foodId);
-                        mf.setFood(food);
-                        return mealFoodService.save(mf);
-                    })
-                    .collect(Collectors.toSet());
-            meal.setMealFoods(mealFoods);
-        } catch (NoSuchElementException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Meal not found");
+        } catch (RecordNotFoundException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        } catch (DataAccessException e) {
+            log.error("Database access error:", e);
+            redirectAttributes.addFlashAttribute("errorMessage", "Data access error");
         }
         return "redirect:/meal/" + id + "/edit";
     }
@@ -153,71 +191,74 @@ public class MealController {
     @PostMapping("/meal/{id}/delete")
     public String deleteMeal(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         try {
-            Meal meal = mealService.getMealById(id);
-            String mealName = meal.getMealName();
-            mealService.deleteMealById(id);
-            redirectAttributes.addFlashAttribute("successMessage", "Jídlo \"" + mealName + "\" bylo smazáno!");
-            return "redirect:/meal/list";
-
-        } catch (NoSuchElementException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Jídlo nenalezeno!");
-            return "redirect:/meal/list";
+            Meal meal = mealService.deleteMealById(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Meal \"" + meal.getMealName() + "\" was deleted!");
+        } catch (RecordNotFoundException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        } catch (DataAccessException e) {
+            log.error("Database access error:", e);
+            redirectAttributes.addFlashAttribute("errorMessage", "Data access error");
         }
+        return "redirect:/meal";
     }
 
     @PostMapping("/meal/{mealId}/food/{id}/delete")
     public String deleteFoodFromMeal(@PathVariable("mealId") Long mealId, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         try {
-            Food food = foodService.findById(id);
-            String foodName = food.getName();
+            Food food = foodService.getFoodById(id);
             mealFoodService.deleteMealFoodByMealIdAndFoodId(mealId, id);
-            redirectAttributes.addFlashAttribute("successMessage", "Potravina  \"" + foodName + "\" byla smazána!");
-            return "redirect:/meal/" + mealId + "/edit";
-
-        } catch (NoSuchElementException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Potravina nenalezena!");
-            return "redirect:/meal/" + mealId + "/edit";
+            redirectAttributes.addFlashAttribute("successMessage", "Food  \"" + food.getName() + "\" was deleted.");
+        } catch (RecordNotFoundException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        } catch (DataAccessException e) {
+            log.error("Database access error:", e);
+            redirectAttributes.addFlashAttribute("errorMessage", "Data access error");
         }
+        return "redirect:/meal/" + mealId + "/edit";
     }
 
-    @GetMapping("/meal/list")
-    public String listMeals(Model model) {
-        List<MealDTO> mealsDTO = mealService.calculateAndReturnMealDtoList();
-        model.addAttribute("mealsDTO", mealsDTO);
-
-        return "listMeals";
-    }
     @GetMapping("/meal/{mealId}/food/{id}/edit")
     public String editFoodFromMealGet(@PathVariable("mealId") Long mealId, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
+        if(!mealFoodService.existsMealFoodByMealIdAndFoodId(mealId, id)) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Food record with id " + id + " is not associated with Meal record with id " + mealId);
+            return "redirect:/meal";
+        }
         try {
             MealDTO mealDTO = mealService.calculateAndReturnMealDto(mealId);
-            Food food = foodService.findById(id);
-            List<Portion> portions = portionService.findPortionsByFood(food);
+            Food food = foodService.getFoodById(id);
+            List<Portion> portions = portionService.getPortionsByFood(food);
             model.addAttribute("mealDTO", mealDTO);
             model.addAttribute("food", food);
             model.addAttribute("portions", portions);
             return "editMealFood";
-        } catch (NoSuchElementException | IllegalArgumentException e) { // to be specified later
+        } catch (RecordNotFoundException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-            return "redirect:/meal/" + mealId + "/edit";
+        } catch (DataAccessException e) {
+            log.error("Database access error:", e);
+            redirectAttributes.addFlashAttribute("errorMessage", "Data access error");
         }
+        return "redirect:/meal/" + mealId + "/edit";
     }
+
     @PostMapping("/meal/{mealId}/food/{id}/edit")
     public String editFoodFromMealPost(@PathVariable("mealId") Long mealId, @PathVariable("id") Long id,
                                        @Valid @ModelAttribute MealFormDTO mealFormDTO, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
 
+        if(!mealFoodService.existsMealFoodByMealIdAndFoodId(mealId, id)) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Food record with id " + id + " is not associated with Meal record with id " + mealId);
+            return "redirect:/meal";
+        }
         if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Validace selhala! Formulář byl resetován!");
+            redirectAttributes.addFlashAttribute("errorMessage", "Validation failed!");
             return "redirect:/meal/" + mealId + "/food/" + id + "/edit";
         }
-
         try {
-            MealFood mealFood = mealFoodService.findMealFoodByMealIdAndFoodId(mealId, id);
-            BigDecimal savedQuantity = mealFormDTO.getQuantity().multiply(mealFormDTO.getPortionSize());
-            mealFood.setQuantity(savedQuantity);
-            mealFoodService.save(mealFood);
-        } catch (NoSuchElementException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Meal not found!");
+            mealFoodService.updateMealFood(mealId, id, mealFormDTO);
+        } catch (RecordNotFoundException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        } catch (DataAccessException e) {
+            log.error("Database access error:", e);
+            redirectAttributes.addFlashAttribute("errorMessage", "Data access error");
         }
         return "redirect:/meal/" + mealId + "/edit";
     }

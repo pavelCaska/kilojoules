@@ -11,13 +11,11 @@
 </head>
 <body>
 <div class="container p-3 my-5">
-    <h1 class="display-5 border-bottom">Přidej nové jídlo</h1>
+    <h1 class="display-5 border-bottom">Add new meal</h1>
 
-    <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
-    <div class="alert alert-success" th:if="${successMessage}" th:text="${successMessage}"></div>
+    <div th:insert="~{fragments/messages :: messagesFragment}"></div>
 
-
-    <form th:action="@{/meal/foodSearch}" th:method="get">
+    <form th:action="@{/meal/food-search}" th:method="get">
         <div th:insert="~{fragments/foodSearch :: foodSearchFragment}"></div>
     </form>
 
@@ -42,27 +40,17 @@
             <div class="col-md-3 form-group">
                 <label for="quantity">Quantity</label>
                 <input type="number" id="quantity" name="quantity" th:field="*{quantity}" class="form-control" step="0.01" required />
-                <div class="invalid-feedback">Please provide the quantity.</div>
+                <div class="invalid-feedback">Please provide a valid quantity.</div>
             </div>
         </div>
         <div class="row mt-3">
             <div class="col-md-3 form-group">
-                <label for="mealName">Název jídla</label>
+                <label for="mealName">Meal name</label>
                 <input type="text" id="mealName" name="mealName" class="form-control" th:field="*{mealName}" maxlength="75" required pattern=".*\S+.*"/>
-                <div class="invalid-feedback">Pole název nesmí být prázdné nebo obsahovat jen mezery.</div>
+                <div class="invalid-feedback">Please enter the name of the meal.</div>
             </div>
         </div>
-        <div class="row mt-4 d-flex justify-content-between">
-            <div class="col-md-3">
-                <a class="btn btn-secondary w-100" th:href="@{/meal/list}" th:text="'Go Back'">Go Back</a>
-            </div>
-            <div class="col-md-3">
-                <button type="reset" class="btn btn-warning w-100">Reset</button>
-            </div>
-            <div class="col-md-3">
-                <button type="submit" class="btn btn-success w-100">Submit</button>
-            </div>
-        </div>
+        <div th:insert="~{fragments/mealButtons :: mealButtonsFragment}"></div>
     </form>
 </div>
 <script>

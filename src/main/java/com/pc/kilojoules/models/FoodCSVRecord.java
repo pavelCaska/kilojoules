@@ -23,7 +23,7 @@ public class FoodCSVRecord {
     private Date createdAt;
     @CsvBindByName(column = "Množství")
     @CsvNumber("#,#")  // Use a pattern that supports commas as decimal separators
-    private BigDecimal amount;
+    private BigDecimal quantity;
     @CsvBindByName(column = "kJ")
     @CsvNumber("#,#")
     private BigDecimal kiloJoules;

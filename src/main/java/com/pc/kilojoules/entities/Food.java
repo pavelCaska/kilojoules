@@ -3,6 +3,7 @@ package com.pc.kilojoules.entities;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -29,8 +30,8 @@ public class Food {
     private String name;
 
     @NotNull
-    @DecimalMin(value = "0.0", message = "Amount must be greater than or equal to zero")
-    private BigDecimal amount; // denominator or divisor
+    @DecimalMin(value = "0.0", message = "Quantity must be greater than or equal to zero")
+    private BigDecimal quantity = new BigDecimal("100"); // denominator or divisor
 
     @NotNull
     @DecimalMin(value = "0.0", message = "KiloJoules must be greater than or equal to zero")
@@ -44,38 +45,52 @@ public class Food {
     @DecimalMin(value = "0.0", message = "Carbohydrates must be greater than or equal to zero")
     private BigDecimal carbohydrates;
 
-//    @NotNull
+    @Builder.Default
+    @NotNull
     @DecimalMin(value = "0.0", message = "Fiber must be greater than or equal to zero")
-    private BigDecimal fiber;
+    private BigDecimal fiber = BigDecimal.ZERO;
 
+    @Builder.Default
+    @NotNull
     @DecimalMin(value = "0.0", message = "Sugar must be greater than or equal to zero")
-    private BigDecimal sugar;
+    private BigDecimal sugar = BigDecimal.ZERO;
 
     @NotNull
     @DecimalMin(value = "0.0", message = "Fat must be greater than or equal to zero")
     private BigDecimal fat;
 
+    @Builder.Default
+    @NotNull
     @DecimalMin(value = "0.0", message = "SAFA must be greater than or equal to zero")
-    private BigDecimal safa;
+    private BigDecimal safa = BigDecimal.ZERO;
 
+    @Builder.Default
+    @NotNull
     @DecimalMin(value = "0.0", message = "TFA must be greater than or equal to zero")
-    private BigDecimal tfa;
+    private BigDecimal tfa = BigDecimal.ZERO;
 
+    @Builder.Default
+    @NotNull
     @DecimalMin(value = "0.0", message = "Cholesterol must be greater than or equal to zero")
-    private BigDecimal cholesterol;
+    private BigDecimal cholesterol = BigDecimal.ZERO;
 
+    @Builder.Default
+    @NotNull
     @DecimalMin(value = "0.0", message = "Sodium must be greater than or equal to zero")
-    private BigDecimal sodium;
+    private BigDecimal sodium = BigDecimal.ZERO;
 
+    @Builder.Default
+    @NotNull
     @DecimalMin(value = "0.0", message = "Calcium must be greater than or equal to zero")
-    private BigDecimal calcium;
+    private BigDecimal calcium = BigDecimal.ZERO;
 
+    @Builder.Default
+    @NotNull
     @DecimalMin(value = "0.0", message = "PHE must be greater than or equal to zero")
-    private BigDecimal phe;
+    private BigDecimal phe = BigDecimal.ZERO;
 
-    @Temporal(value = TemporalType.DATE)
+    @CreationTimestamp
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    @PastOrPresent(message = "The 'createdAt' date must be in the past or today")
     private Date createdAt;
 
     @UpdateTimestamp

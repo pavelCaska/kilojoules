@@ -1,136 +1,155 @@
 package com.pc.kilojoules.services;
 
+import com.pc.kilojoules.entities.Food;
 import com.pc.kilojoules.entities.Meal;
+import com.pc.kilojoules.entities.MealFood;
+import com.pc.kilojoules.exceptions.RecordNotFoundException;
 import com.pc.kilojoules.models.MealDTO;
 import com.pc.kilojoules.models.MealFoodDTO;
+import com.pc.kilojoules.models.MealFormDTO;
 import com.pc.kilojoules.repositories.MealRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 public class MealServiceImpl implements MealService {
 
     private final MealRepository mealRepository;
+    private final FoodService foodService;
+    private final MealFoodService mealFoodService;
 
     @Autowired
-    public MealServiceImpl(MealRepository mealRepository) {
+    public MealServiceImpl(MealRepository mealRepository, FoodService foodService, MealFoodService mealFoodService) {
         this.mealRepository = mealRepository;
+        this.foodService = foodService;
+        this.mealFoodService = mealFoodService;
     }
 
     @Override
     public Meal save(Meal meal) {
-
         return mealRepository.save(meal);
     }
 
     @Override
-    public List<Meal> getAllMeals() {
-        return mealRepository.findAll();
+    public Page<Meal> getMealsByPage(int page) {
+        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "updatedAt"));
+        return mealRepository.findAll(pageable);
     }
 
     @Override
     public Meal getMealById(Long id) {
-        return mealRepository.findById(id).orElseThrow();
+        return mealRepository.findById(id).orElseThrow(()-> new RecordNotFoundException("Meal record with id " + id + " does not exist!"));
     }
 
     @Override
-    public List<MealDTO> calculateAndReturnMealDtoList() {
-        List<Meal> meals = getAllMeals();
+    public Meal createMeal(MealFormDTO mealFormDTO, List<Long> foods) {
+        Meal meal = Meal.builder()
+                .mealName(mealFormDTO.getMealName())
+                .build();
+        mealRepository.save(meal);
 
-        List<MealDTO> mealsDTO = meals.stream().map(meal -> {
-            MealDTO mealDTO = new MealDTO();
-            mealDTO.setMealName(meal.getMealName());
-            mealDTO.setMealId(meal.getId());
+        BigDecimal savedQuantity = mealFormDTO.getQuantity().multiply(mealFormDTO.getPortionSize());
+        Set<MealFood> mealFoods = this.getMealFoodSet(foods, meal, savedQuantity);
+        meal.setMealFoods(mealFoods);
+        return mealRepository.save(meal);
+    }
 
-            List<MealFoodDTO> mealFoodsDTO = meal.getMealFoods().stream().map(mealFood -> {
-                MealFoodDTO dto = new MealFoodDTO();
-                dto.setFoodId(mealFood.getFood().getId());
-                dto.setFoodName(mealFood.getFood().getName());
+    private Set<MealFood> getMealFoodSet(List<Long> foods, Meal meal, BigDecimal savedQuantity) {
+        return foods.stream()
+                .map(foodId -> {
+                    MealFood mf = new MealFood();
+                    mf.setMeal(meal);
+                    mf.setQuantity(savedQuantity);
+                    Food food = foodService.getFoodById(foodId);
+                    mf.setFood(food);
+                    return mealFoodService.save(mf);
+                })
+                .collect(Collectors.toSet());
+    }
 
-                BigDecimal quantity = mealFood.getQuantity();
-                BigDecimal amount = mealFood.getFood().getAmount();
+    @Override
+    public Meal addFoodToMeal(Long id, MealFormDTO mealFormDTO, List<Long> foods) {
+        Meal meal = this.getMealById(id);
+        meal.setMealName(mealFormDTO.getMealName());
 
-                dto.setQuantity(quantity);
-                dto.setAdjustedKiloJoules(mealFood.getFood().getKiloJoules().multiply(quantity).divide(amount));
-                dto.setAdjustedProteins(mealFood.getFood().getProteins().multiply(quantity).divide(amount));
-                dto.setAdjustedCarbohydrates(mealFood.getFood().getCarbohydrates().multiply(quantity).divide(amount));
+        BigDecimal savedQuantity = mealFormDTO.getQuantity().multiply(mealFormDTO.getPortionSize());
+        Set<MealFood> mealFoods = getMealFoodSet(foods, meal, savedQuantity);
+        meal.setMealFoods(mealFoods);
+        return mealRepository.save(meal);
+    }
 
-                if (mealFood.getFood().getFiber() != null) {
-                    dto.setAdjustedFiber(mealFood.getFood().getFiber().multiply(quantity).divide(amount));
-                } else {
-                    dto.setAdjustedFiber(BigDecimal.ZERO);
-                }
+    @Override
+    public Meal updateMealName(Long id, String mealName) {
+            Meal meal = mealRepository.findById(id).orElseThrow(()-> new RecordNotFoundException("Meal record with id " + id + " does not exist!"));
+            meal.setMealName(mealName);
+            return mealRepository.save(meal);
+    }
 
-                dto.setAdjustedFat(mealFood.getFood().getFat().multiply(quantity).divide(amount));
-
-                return dto;
-            }).collect(Collectors.toList());
-            mealDTO.setMealFoodsDTO(mealFoodsDTO);
-
-            mealDTO.setSumQuantity(mealFoodsDTO.stream().map(MealFoodDTO::getQuantity).reduce(BigDecimal.ZERO,BigDecimal::add));
-            mealDTO.setSumAdjustedKiloJoules(mealFoodsDTO.stream().map(MealFoodDTO::getAdjustedKiloJoules).reduce(BigDecimal.ZERO,BigDecimal::add));
-            mealDTO.setSumAdjustedProteins(mealFoodsDTO.stream().map(MealFoodDTO::getAdjustedProteins).reduce(BigDecimal.ZERO,BigDecimal::add));
-            mealDTO.setSumAdjustedCarbohydrates(mealFoodsDTO.stream().map(MealFoodDTO::getAdjustedCarbohydrates).reduce(BigDecimal.ZERO,BigDecimal::add));
-            mealDTO.setSumAdjustedFiber(mealFoodsDTO.stream().map(MealFoodDTO::getAdjustedFiber).reduce(BigDecimal.ZERO,BigDecimal::add));
-            mealDTO.setSumAdjustedFat(mealFoodsDTO.stream().map(MealFoodDTO::getAdjustedFat).reduce(BigDecimal.ZERO,BigDecimal::add));
-
-            return mealDTO;
-        }).collect(Collectors.toList());
-
-        return mealsDTO;
+    @Override
+    public List<MealDTO> calculateAndReturnMealDtoList(List<Meal> meals) {
+        return meals.stream().map(this::getMealDTO).collect(Collectors.toList());
     }
     @Override
     public MealDTO calculateAndReturnMealDto(Long id) {
+        Meal meal = this.getMealById(id);
+        return getMealDTO(meal);
+    }
+    private MealDTO getMealDTO(Meal meal) {
+        MealDTO mealDTO = new MealDTO();
+        mealDTO.setMealName(meal.getMealName());
+        mealDTO.setMealId(meal.getId());
 
-        Meal meal = getMealById(id);
+        List<MealFoodDTO> mealFoodsDTO = this.calculateAndReturnAdjustedMealFoods(meal);
+        mealDTO.setMealFoodsDTO(mealFoodsDTO);
 
-            MealDTO mealDTO = new MealDTO();
-            mealDTO.setMealName(meal.getMealName());
-            mealDTO.setMealId(meal.getId());
+        this.sumUpMealFoods(mealDTO, mealFoodsDTO);
 
-            List<MealFoodDTO> mealFoodsDTO = meal.getMealFoods().stream().map(mealFood -> {
-                MealFoodDTO dto = new MealFoodDTO();
-                dto.setFoodId(mealFood.getFood().getId());
-                dto.setFoodName(mealFood.getFood().getName());
+        return mealDTO;
+    }
+    @Override
+    public List<MealFoodDTO> calculateAndReturnAdjustedMealFoods(Meal meal) {
+        return meal.getMealFoods().stream().map(mealFood -> {
+            MealFoodDTO dto = new MealFoodDTO();
+            dto.setFoodId(mealFood.getFood().getId());
+            dto.setFoodName(mealFood.getFood().getName());
 
-                BigDecimal quantity = mealFood.getQuantity();
-                BigDecimal amount = mealFood.getFood().getAmount();
+            BigDecimal quantity = mealFood.getQuantity();
+            BigDecimal divisor = mealFood.getFood().getQuantity();
 
-                dto.setQuantity(quantity);
-                dto.setAdjustedKiloJoules(mealFood.getFood().getKiloJoules().multiply(quantity).divide(amount));
-                dto.setAdjustedProteins(mealFood.getFood().getProteins().multiply(quantity).divide(amount));
-                dto.setAdjustedCarbohydrates(mealFood.getFood().getCarbohydrates().multiply(quantity).divide(amount));
+            dto.setQuantity(quantity);
+            dto.setAdjustedKiloJoules(mealFood.getFood().getKiloJoules().multiply(quantity).divide(divisor, RoundingMode.HALF_UP));
+            dto.setAdjustedProteins(mealFood.getFood().getProteins().multiply(quantity).divide(divisor, RoundingMode.HALF_UP));
+            dto.setAdjustedCarbohydrates(mealFood.getFood().getCarbohydrates().multiply(quantity).divide(divisor, RoundingMode.HALF_UP));
+            dto.setAdjustedFiber(mealFood.getFood().getFiber().multiply(quantity).divide(divisor, RoundingMode.HALF_UP));
+            dto.setAdjustedFat(mealFood.getFood().getFat().multiply(quantity).divide(divisor, RoundingMode.HALF_UP));
 
-                if (mealFood.getFood().getFiber() != null) {
-                    dto.setAdjustedFiber(mealFood.getFood().getFiber().multiply(quantity).divide(amount));
-                } else {
-                    dto.setAdjustedFiber(BigDecimal.ZERO);
-                }
-
-                dto.setAdjustedFat(mealFood.getFood().getFat().multiply(quantity).divide(amount));
-
-                return dto;
-            }).collect(Collectors.toList());
-            mealDTO.setMealFoodsDTO(mealFoodsDTO);
-
-            mealDTO.setSumQuantity(mealFoodsDTO.stream().map(MealFoodDTO::getQuantity).reduce(BigDecimal.ZERO,BigDecimal::add));
-            mealDTO.setSumAdjustedKiloJoules(mealFoodsDTO.stream().map(MealFoodDTO::getAdjustedKiloJoules).reduce(BigDecimal.ZERO,BigDecimal::add));
-            mealDTO.setSumAdjustedProteins(mealFoodsDTO.stream().map(MealFoodDTO::getAdjustedProteins).reduce(BigDecimal.ZERO,BigDecimal::add));
-            mealDTO.setSumAdjustedCarbohydrates(mealFoodsDTO.stream().map(MealFoodDTO::getAdjustedCarbohydrates).reduce(BigDecimal.ZERO,BigDecimal::add));
-            mealDTO.setSumAdjustedFiber(mealFoodsDTO.stream().map(MealFoodDTO::getAdjustedFiber).reduce(BigDecimal.ZERO,BigDecimal::add));
-            mealDTO.setSumAdjustedFat(mealFoodsDTO.stream().map(MealFoodDTO::getAdjustedFat).reduce(BigDecimal.ZERO,BigDecimal::add));
-
-            return mealDTO;
+            return dto;
+        }).collect(Collectors.toList());
+    }
+    @Override
+    public void sumUpMealFoods(MealDTO mealDTO, List<MealFoodDTO> mealFoodsDTO) {
+        mealDTO.setSumQuantity(mealFoodsDTO.stream().map(MealFoodDTO::getQuantity).reduce(BigDecimal.ZERO,BigDecimal::add));
+        mealDTO.setSumAdjustedKiloJoules(mealFoodsDTO.stream().map(MealFoodDTO::getAdjustedKiloJoules).reduce(BigDecimal.ZERO,BigDecimal::add));
+        mealDTO.setSumAdjustedProteins(mealFoodsDTO.stream().map(MealFoodDTO::getAdjustedProteins).reduce(BigDecimal.ZERO,BigDecimal::add));
+        mealDTO.setSumAdjustedCarbohydrates(mealFoodsDTO.stream().map(MealFoodDTO::getAdjustedCarbohydrates).reduce(BigDecimal.ZERO,BigDecimal::add));
+        mealDTO.setSumAdjustedFiber(mealFoodsDTO.stream().map(MealFoodDTO::getAdjustedFiber).reduce(BigDecimal.ZERO,BigDecimal::add));
+        mealDTO.setSumAdjustedFat(mealFoodsDTO.stream().map(MealFoodDTO::getAdjustedFat).reduce(BigDecimal.ZERO,BigDecimal::add));
     }
 
     @Override
-    @Transactional
-    public void deleteMealById(Long id) {
-        mealRepository.deleteById(id);
+    public Meal deleteMealById(Long id) {
+        Meal meal = mealRepository.findById(id).orElseThrow(()-> new RecordNotFoundException("Meal record with id " + id + " does not exist!"));
+        mealRepository.delete(meal);
+        return meal;
     }
 }

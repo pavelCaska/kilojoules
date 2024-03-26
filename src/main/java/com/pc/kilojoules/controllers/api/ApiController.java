@@ -31,8 +31,8 @@ public class ApiController {
     @GetMapping("/getPortions")
     public ResponseEntity<List<PortionResponseDTO>> getPortions(@RequestParam Long foodId) {
         try {
-            Food food = foodService.findById(foodId);
-            List<PortionResponseDTO> portions = portionService.findPortionsByFood(food).stream()
+            Food food = foodService.getFoodById(foodId);
+            List<PortionResponseDTO> portions = portionService.getPortionsByFood(food).stream()
                     .map(o -> new PortionResponseDTO(o.getPortionName(), o.getPortionSize(), o.getFood().getId()))
                     .collect(Collectors.toList());
             return new ResponseEntity<>(portions, HttpStatus.OK);

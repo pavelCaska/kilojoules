@@ -7,17 +7,16 @@ import java.util.List;
 
 public interface FoodService {
 
-    List<Food> findAllByUpdatedDesc();
+    Page<Food> getFoodsByPage(int page);
 
-    Food findById(Long id);
+    Food getFoodById(Long id);
 
-    Food update(Food food);
+    Food updateFood(Food food);
 
-    Food create(Food food);
+    Food createFoodWithPortions(Food food);
 
     Food deleteFoodById(Long id);
 
     List<Food> searchFood(String query);
 
-    Page<Food> getFoodsByPage(int page);
 }

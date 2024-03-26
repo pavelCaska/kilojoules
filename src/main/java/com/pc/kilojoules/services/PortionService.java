@@ -6,9 +6,9 @@ import com.pc.kilojoules.entities.Portion;
 import java.util.List;
 
 public interface PortionService {
-    List<Portion> findPortionsByFood(Food food);
+    List<Portion> getPortionsByFood(Food food);
 
-    Portion save(Portion portion);
+    Portion createPortion(Food food, Portion portion);
 
     Portion deletePortionById(Long id);
 }

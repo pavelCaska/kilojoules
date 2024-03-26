@@ -1,16 +1,9 @@
 package com.pc.kilojoules.bootstrap;
 
-import com.pc.kilojoules.entities.Food;
-import com.pc.kilojoules.entities.Meal;
-import com.pc.kilojoules.entities.MealFood;
-import com.pc.kilojoules.entities.Portion;
+import com.pc.kilojoules.entities.*;
 import com.pc.kilojoules.models.FoodCSVRecord;
-import com.pc.kilojoules.repositories.FoodRepository;
-import com.pc.kilojoules.repositories.MealFoodRepository;
-import com.pc.kilojoules.repositories.MealRepository;
-import com.pc.kilojoules.repositories.PortionRepository;
+import com.pc.kilojoules.repositories.*;
 import com.pc.kilojoules.services.FoodCsvService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,9 +12,14 @@ import org.springframework.util.ResourceUtils;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import static com.pc.kilojoules.constant.Constant.ONE_HUNDRED;
 
 @Component
 public class BootstrapData implements CommandLineRunner {
@@ -31,14 +29,26 @@ public class BootstrapData implements CommandLineRunner {
     private final PortionRepository portionRepository;
     private final MealRepository mealRepository;
     private final MealFoodRepository mealFoodRepository;
+    private final JournalRepository journalRepository;
+    private final JournalFoodRepository journalFoodRepository;
+    private final JournalFoodPortionRepository journalFoodPortionRepository;
+    private final JournalMealRepository journalMealRepository;
+    private final JournalMealFoodRepository journalMealFoodRepository;
+    private final JournalMealFoodPortionRepository journalMealFoodPortionRepository;
 
-    @Autowired
-    public BootstrapData(FoodRepository foodRepository, FoodCsvService foodCsvService, PortionRepository portionRepository, MealRepository mealRepository, MealFoodRepository mealFoodRepository) {
+    public BootstrapData(FoodRepository foodRepository, FoodCsvService foodCsvService, PortionRepository portionRepository, MealRepository mealRepository, MealFoodRepository mealFoodRepository, JournalRepository journalRepository, JournalFoodRepository journalFoodRepository,
+                         JournalFoodPortionRepository journalFoodPortionRepository, JournalMealRepository journalMealRepository, JournalMealFoodRepository journalMealFoodRepository, JournalMealFoodPortionRepository journalMealFoodPortionRepository) {
         this.foodRepository = foodRepository;
         this.foodCsvService = foodCsvService;
         this.portionRepository = portionRepository;
         this.mealRepository = mealRepository;
         this.mealFoodRepository = mealFoodRepository;
+        this.journalRepository = journalRepository;
+        this.journalFoodRepository = journalFoodRepository;
+        this.journalFoodPortionRepository = journalFoodPortionRepository;
+        this.journalMealRepository = journalMealRepository;
+        this.journalMealFoodRepository = journalMealFoodRepository;
+        this.journalMealFoodPortionRepository = journalMealFoodPortionRepository;
     }
 
     @Transactional
@@ -48,6 +58,8 @@ public class BootstrapData implements CommandLineRunner {
         populatePortions();
         populateIndividualPortions();
         populateIndividualMeals();
+        populateJournalWithFoods();
+        populateJournalWithMeals();
 
     }
 
@@ -61,19 +73,19 @@ public class BootstrapData implements CommandLineRunner {
 
                 foodRepository.save(Food.builder()
                                 .name(foodCSVRecord.getName())
-                                .amount(foodCSVRecord.getAmount())
-                                .kiloJoules(foodCSVRecord.getKiloJoules())
-                                .proteins(foodCSVRecord.getProteins())
-                                .carbohydrates(foodCSVRecord.getCarbohydrates())
-                                .fiber(foodCSVRecord.getFiber())
-                                .sugar(foodCSVRecord.getSugar())
-                                .fat(foodCSVRecord.getFat())
-                                .safa(foodCSVRecord.getSafa())
-                                .tfa(foodCSVRecord.getTfa())
-                                .cholesterol(foodCSVRecord.getCholesterol())
-                                .sodium(foodCSVRecord.getSodium())
-                                .calcium(foodCSVRecord.getCalcium())
-                                .phe(foodCSVRecord.getPhe())
+                                .quantity(foodCSVRecord.getQuantity() != null ? foodCSVRecord.getQuantity() : BigDecimal.ZERO)
+                                .kiloJoules(foodCSVRecord.getKiloJoules() != null ? foodCSVRecord.getKiloJoules() : BigDecimal.ZERO)
+                                .proteins(foodCSVRecord.getProteins() != null ? foodCSVRecord.getProteins() : BigDecimal.ZERO)
+                                .carbohydrates(foodCSVRecord.getCarbohydrates() != null ? foodCSVRecord.getCarbohydrates() : BigDecimal.ZERO)
+                                .fiber(foodCSVRecord.getFiber() != null ? foodCSVRecord.getFiber() : BigDecimal.ZERO)
+                                .sugar(foodCSVRecord.getSugar() != null ? foodCSVRecord.getSugar() : BigDecimal.ZERO)
+                                .fat(foodCSVRecord.getFat() != null ? foodCSVRecord.getFat() : BigDecimal.ZERO)
+                                .safa(foodCSVRecord.getSafa() != null ? foodCSVRecord.getSafa() : BigDecimal.ZERO)
+                                .tfa(foodCSVRecord.getTfa() != null ? foodCSVRecord.getTfa() : BigDecimal.ZERO)
+                                .cholesterol(foodCSVRecord.getCholesterol() != null ? foodCSVRecord.getCholesterol() : BigDecimal.ZERO)
+                                .sodium(foodCSVRecord.getSodium() != null ? foodCSVRecord.getSodium() : BigDecimal.ZERO)
+                                .calcium(foodCSVRecord.getCalcium() != null ? foodCSVRecord.getCalcium() : BigDecimal.ZERO)
+                                .phe(foodCSVRecord.getPhe() != null ? foodCSVRecord.getPhe() : BigDecimal.ZERO)
                                 .createdAt(foodCSVRecord.getCreatedAt())
                         .build());
             });
@@ -207,5 +219,195 @@ public class BootstrapData implements CommandLineRunner {
 
         vejceSCibuli.setMealFoods(vejceCibule);
         mealRepository.save(vejceSCibuli);
+    }
+
+    private void populateJournalWithFoods() {
+        Food food1 = foodRepository.findById(12L).orElseThrow();
+        BigDecimal quantity1 = new BigDecimal("165");
+
+        JournalFood journalFood1 = JournalFood.builder()
+                .name(food1.getName())
+                .quantity(quantity1)
+                .kiloJoules(food1.getKiloJoules().multiply(quantity1).divide(ONE_HUNDRED, RoundingMode.HALF_UP))
+                .proteins(food1.getProteins().multiply(quantity1).divide(ONE_HUNDRED, RoundingMode.HALF_UP))
+                .carbohydrates(food1.getCarbohydrates().multiply(quantity1).divide(ONE_HUNDRED, RoundingMode.HALF_UP))
+                .fat(food1.getFat().multiply(quantity1).divide(ONE_HUNDRED, RoundingMode.HALF_UP))
+                .fiber(food1.getFiber().multiply(quantity1).divide(ONE_HUNDRED, RoundingMode.HALF_UP))
+                .build();
+        JournalFood savedJournalFood1 = journalFoodRepository.save(journalFood1);
+
+        List<Portion> portions = portionRepository.findPortionsByFood(food1);
+        portions.forEach(portion -> {
+            JournalFoodPortion journalFoodPortion1 = JournalFoodPortion.builder()
+                    .journalFood(savedJournalFood1)
+                    .portionName(portion.getPortionName())
+                    .portionSize(portion.getPortionSize())
+                    .build();
+            journalFoodPortionRepository.save(journalFoodPortion1);
+        });
+
+        LocalDate date = LocalDate.now();
+        Journal journal1 = Journal.builder()
+                .consumedAt(date)
+                .mealType(MealType.BREAKFAST)
+                .journalFood(journalFood1)
+                .journalMeal(null)
+                .build();
+        journalRepository.save(journal1);
+
+        Food food2 = foodRepository.findById(9L).orElseThrow();
+        BigDecimal quantity2 = new BigDecimal("50");
+
+        JournalFood journalFood2 = JournalFood.builder()
+                .name(food2.getName())
+                .quantity(quantity2)
+                .kiloJoules(food2.getKiloJoules().multiply(quantity2).divide(ONE_HUNDRED, RoundingMode.HALF_UP))
+                .proteins(food2.getProteins().multiply(quantity2).divide(ONE_HUNDRED, RoundingMode.HALF_UP))
+                .carbohydrates(food2.getCarbohydrates().multiply(quantity2).divide(ONE_HUNDRED, RoundingMode.HALF_UP))
+                .fat(food2.getFat().multiply(quantity2).divide(ONE_HUNDRED, RoundingMode.HALF_UP))
+                .fiber(food2.getFiber().multiply(quantity2).divide(ONE_HUNDRED, RoundingMode.HALF_UP))
+                .build();
+        JournalFood savedJournalFood2 = journalFoodRepository.save(journalFood2);
+
+        List<Portion> portions2 = portionRepository.findPortionsByFood(food2);
+        portions2.forEach((Portion portion) -> {
+            JournalFoodPortion journalFoodPortion2 = JournalFoodPortion.builder()
+                    .journalFood(savedJournalFood2)
+                    .portionName(portion.getPortionName())
+                    .portionSize(portion.getPortionSize())
+                    .build();
+            journalFoodPortionRepository.save(journalFoodPortion2);
+        });
+
+        Journal journal2 = Journal.builder()
+                .consumedAt(date)
+                .mealType(MealType.LUNCH)
+                .journalFood(journalFood2)
+                .journalMeal(null)
+                .build();
+        journalRepository.save(journal2);
+    }
+
+    private void populateJournalWithMeals() {
+
+        Meal meal1 = mealRepository.findById(1L).orElseThrow(); // Bolognese s brambory
+
+        JournalMeal journalMeal1 = JournalMeal.builder()
+                .mealName(meal1.getMealName())
+                .saved(false)
+                .build();
+        journalMealRepository.save(journalMeal1);
+
+        Set<JournalMealFood> journalMealFoods1 = new HashSet<>();
+        for (MealFood mealFood : meal1.getMealFoods()) {
+            JournalMealFood journalMealFood = new JournalMealFood();
+            BigDecimal quantity = mealFood.getQuantity();
+            Food food = mealFood.getFood();
+            journalMealFood.setName(food.getName());
+            journalMealFood.setQuantity(quantity);
+            journalMealFood.setKiloJoules(food.getKiloJoules().multiply(quantity).divide(ONE_HUNDRED, RoundingMode.HALF_UP));
+            journalMealFood.setProteins(food.getProteins().multiply(quantity).divide(ONE_HUNDRED, RoundingMode.HALF_UP));
+            journalMealFood.setCarbohydrates(food.getCarbohydrates().multiply(quantity).divide(ONE_HUNDRED, RoundingMode.HALF_UP));
+            journalMealFood.setFiber(food.getFiber().multiply(quantity).divide(ONE_HUNDRED, RoundingMode.HALF_UP));
+            journalMealFood.setFat(food.getFat().multiply(quantity).divide(ONE_HUNDRED, RoundingMode.HALF_UP));
+            journalMealFood.setJournalMeal(journalMeal1);
+            journalMealFood = journalMealFoodRepository.save(journalMealFood);
+            final JournalMealFood finalJournalMealFood1 = journalMealFood;
+            List<JournalMealFoodPortion> portionList = new ArrayList<>();
+
+            List<Portion> portions = portionRepository.findPortionsByFood(food);
+            portions.forEach(portion -> {
+                JournalMealFoodPortion journalMealFoodPortion = JournalMealFoodPortion.builder()
+                        .portionName(portion.getPortionName())
+                        .portionSize(portion.getPortionSize())
+                        .journalMealFood(finalJournalMealFood1)
+                        .build();
+                journalMealFoodPortionRepository.save(journalMealFoodPortion);
+                portionList.add(journalMealFoodPortion);
+            });
+            journalMealFood.setPortions(portionList);
+
+            journalMealFoods1.add(journalMealFood);
+        }
+        journalMeal1.setJournalMealFoods(journalMealFoods1);
+
+        journalMeal1.setQuantity(journalMealFoods1.stream().map(JournalMealFood::getQuantity).reduce(BigDecimal.ZERO,BigDecimal::add));
+        journalMeal1.setKiloJoules(journalMealFoods1.stream().map(JournalMealFood::getKiloJoules).reduce(BigDecimal.ZERO,BigDecimal::add));
+        journalMeal1.setProteins(journalMealFoods1.stream().map(JournalMealFood::getProteins).reduce(BigDecimal.ZERO,BigDecimal::add));
+        journalMeal1.setCarbohydrates(journalMealFoods1.stream().map(JournalMealFood::getCarbohydrates).reduce(BigDecimal.ZERO,BigDecimal::add));
+        journalMeal1.setFiber(journalMealFoods1.stream().map(JournalMealFood::getFiber).reduce(BigDecimal.ZERO,BigDecimal::add));
+        journalMeal1.setFat(journalMealFoods1.stream().map(JournalMealFood::getFat).reduce(BigDecimal.ZERO,BigDecimal::add));
+
+        journalMeal1.setSaved(true);
+        journalMealRepository.save(journalMeal1);
+
+        LocalDate date = LocalDate.now();
+        Journal journal1 = Journal.builder()
+                .consumedAt(date)
+                .mealType(MealType.LUNCH)
+                .journalFood(null)
+                .journalMeal(journalMeal1)
+                .build();
+        journalRepository.save(journal1);
+
+        Meal meal2 = mealRepository.findById(2L).orElseThrow(); // Vejce s cibuli
+        JournalMeal journalMeal2 = JournalMeal.builder()
+                .mealName(meal2.getMealName())
+                .saved(false)
+                .build();
+        journalMealRepository.save(journalMeal2);
+
+        Set<JournalMealFood> journalMealFoods2 = new HashSet<>();
+        for (MealFood mealFood : meal2.getMealFoods()) {
+            JournalMealFood journalMealFood = new JournalMealFood();
+            BigDecimal quantity = mealFood.getQuantity();
+            Food food = mealFood.getFood();
+            journalMealFood.setName(food.getName());
+            journalMealFood.setQuantity(quantity);
+            journalMealFood.setKiloJoules(food.getKiloJoules().multiply(quantity).divide(ONE_HUNDRED, RoundingMode.HALF_UP));
+            journalMealFood.setProteins(food.getProteins().multiply(quantity).divide(ONE_HUNDRED, RoundingMode.HALF_UP));
+            journalMealFood.setCarbohydrates(food.getCarbohydrates().multiply(quantity).divide(ONE_HUNDRED, RoundingMode.HALF_UP));
+            journalMealFood.setFiber(food.getFiber().multiply(quantity).divide(ONE_HUNDRED, RoundingMode.HALF_UP));
+            journalMealFood.setFat(food.getFat().multiply(quantity).divide(ONE_HUNDRED, RoundingMode.HALF_UP));
+            journalMealFood.setJournalMeal(journalMeal2);
+            journalMealFood = journalMealFoodRepository.save(journalMealFood);
+            final JournalMealFood finalJournalMealFood2 = journalMealFood;
+            List<JournalMealFoodPortion> portionList = new ArrayList<>();
+
+            List<Portion> portions = portionRepository.findPortionsByFood(food);
+            portions.forEach((Portion portion) -> {
+                JournalMealFoodPortion journalMealFoodPortion = JournalMealFoodPortion.builder()
+                        .portionName(portion.getPortionName())
+                        .portionSize(portion.getPortionSize())
+                        .journalMealFood(finalJournalMealFood2)
+                        .build();
+                journalMealFoodPortionRepository.save(journalMealFoodPortion);
+                portionList.add(journalMealFoodPortion);
+            });
+            journalMealFood.setPortions(portionList);
+
+
+
+            journalMealFoods2.add(journalMealFood);
+        }
+        journalMeal2.setJournalMealFoods(journalMealFoods2);
+
+        journalMeal2.setQuantity(journalMealFoods2.stream().map(JournalMealFood::getQuantity).reduce(BigDecimal.ZERO,BigDecimal::add));
+        journalMeal2.setKiloJoules(journalMealFoods2.stream().map(JournalMealFood::getKiloJoules).reduce(BigDecimal.ZERO,BigDecimal::add));
+        journalMeal2.setProteins(journalMealFoods2.stream().map(JournalMealFood::getProteins).reduce(BigDecimal.ZERO,BigDecimal::add));
+        journalMeal2.setCarbohydrates(journalMealFoods2.stream().map(JournalMealFood::getCarbohydrates).reduce(BigDecimal.ZERO,BigDecimal::add));
+        journalMeal2.setFiber(journalMealFoods2.stream().map(JournalMealFood::getFiber).reduce(BigDecimal.ZERO,BigDecimal::add));
+        journalMeal2.setFat(journalMealFoods2.stream().map(JournalMealFood::getFat).reduce(BigDecimal.ZERO,BigDecimal::add));
+
+        journalMeal2.setSaved(true);
+        journalMealRepository.save(journalMeal2);
+
+        Journal journal2 = Journal.builder()
+                .consumedAt(date)
+                .mealType(MealType.BREAKFAST)
+                .journalFood(null)
+                .journalMeal(journalMeal2)
+                .build();
+        journalRepository.save(journal2);
     }
 }

@@ -1,6 +1,8 @@
 package com.pc.kilojoules.services;
 
 import com.pc.kilojoules.entities.Food;
+import com.pc.kilojoules.entities.Portion;
+import com.pc.kilojoules.exceptions.RecordNotFoundException;
 import com.pc.kilojoules.repositories.FoodRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -8,9 +10,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
+
+import static com.pc.kilojoules.constant.Constant.ONE_HUNDRED;
 
 @Service
 public class FoodServiceImpl implements FoodService {
@@ -22,36 +28,39 @@ public class FoodServiceImpl implements FoodService {
     }
 
     @Override
-    public List<Food> findAllByUpdatedDesc() {
-        return foodRepository.findAll(Sort.by(Sort.Direction.DESC, "updatedAt"));
-    }
-
-    @Override
     public Page<Food> getFoodsByPage(int page) {
-        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "updatedAt")); // 10 foods per page
+        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "updatedAt"));
         return foodRepository.findAll(pageable);
     }
 
     @Override
-    public Food findById(Long id) {
-        return foodRepository.findById(id).orElseThrow();
+    public Food getFoodById(Long id) {
+        return foodRepository.findById(id).orElseThrow(() -> new RecordNotFoundException("Food record with id " + id + " does not exist!"));
     }
 
     @Override
-    public Food update(Food food) {
+    public Food updateFood(Food food) {
         return foodRepository.save(food);
     }
 
     @Override
-    public Food create(Food food) {
-        Date date = new Date();
-        food.setCreatedAt(date);
-        return foodRepository.save(food);
+    @Transactional
+    public Food createFoodWithPortions(Food food) {
+        Food savedFood = foodRepository.save(food);
+
+        List<Portion> portions = new ArrayList<>();
+        Portion portion100 = new Portion("100 g", ONE_HUNDRED, savedFood);
+        Portion portion1 = new Portion("1 g", BigDecimal.ONE, savedFood);
+        portions.add(portion100);
+        portions.add(portion1);
+        savedFood.setPortions(portions);
+        return foodRepository.save(savedFood);
     }
 
     @Override
+    @Transactional
     public Food deleteFoodById(Long id) {
-        Food food = foodRepository.findById(id).orElseThrow();
+        Food food = foodRepository.findById(id).orElseThrow(() -> new RecordNotFoundException("Food record with id " + id + " does not exist!"));
         foodRepository.delete(food);
         return food;
     }
