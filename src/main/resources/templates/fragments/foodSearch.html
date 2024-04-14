@@ -1,0 +1,8 @@
+<div xmlns:th="http://www.thymeleaf.org/" th:fragment="foodSearchFragment">
+    <label for="foodSearch">Search food item</label>
+    <div class="input-group mb-3">
+        <input type="text" id="foodSearch" name="query" class="form-control" maxlength="75" required pattern=".*\S+.*"/>
+        <input type="submit" value="Search" class="btn btn-primary">
+        <input type="reset" value="Reset" class="btn btn-secondary">
+    </div>
+</div>

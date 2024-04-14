@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" th:href="@{/style.css}"/>
+    <title>Journal</title>
+</head>
+<body>
+<div class="container p-3 my-5">
+    <h1 class="display-5 border-bottom"
+        th:with="formatter=${T(java.time.format.DateTimeFormatter).ofPattern('dd.MM.yyyy')}"
+        th:text="'Nutrition Journal for ' + ${date.format(formatter)}">Nutrition Journal</h1>
+    <div th:insert="~{fragments/messages :: messagesFragment}"></div>
+
+    <div class="row mt-3 mb-3 d-flex justify-content-between">
+        <div class="col-md-2">
+            <a class="btn btn-success w-100" th:href="@{/journal}" th:text="Today">Today</a>
+        </div>
+
+        <div class="col-md-1">
+            <a class="btn btn-secondary w-100" th:href="@{'/journal?date=' + ${previousDate}}"
+               th:text="prev">Yesterday</a>
+        </div>
+        <div class="col-md-3">
+            <form th:action="@{/journal}" th:method="get" class="was-validated">
+                <div class="input-group">
+                    <input type="date" class="form-control" id="date" name="date" th:value="${date}" required>
+                    <input class="btn btn-primary" type="submit" value="Go">
+                </div>
+            </form>
+        </div>
+        <div class="col-md-1">
+            <a class="btn btn-secondary w-100" th:href="@{'/journal?date=' + ${nextDate}}" th:text="next">Tomorrow</a>
+        </div>
+        <div class="col-md-3">
+            <a class="btn btn-primary w-100" th:href="@{/journal/search}" th:text="'Add new nutrition item'">Add new
+                nutrition item</a>
+        </div>
+    </div>
+    <div class="table-responsive-xxl">
+        <table class="table table-hover">
+            <thead class="table-secondary">
+            <tr>
+                <th class="col-center"></th>
+                <th class="col-center">Quantity</th>
+                <th class="col-center">Kilojoules</th>
+                <th class="col-center">Proteins</th>
+                <th class="col-center">Carbohydrates</th>
+                <th class="col-center">Fiber</th>
+                <th class="col-center">Fat</th>
+                <th class="col-right"></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:unless="${#lists.isEmpty(entriesB)}">
+                <td colspan="8" class="bg-light fw-bold" th:text="Breakfast">Breakfast</td>
+            </tr>
+            <tr th:each="entry : ${entriesB}" th:insert="~{fragments/journalTable :: journalTableFragment}"></tr>
+            <tr th:unless="${#lists.isEmpty(entriesM)}">
+                <td colspan="8" class="bg-light fw-bold" th:text="'Mid-morning snack'">Mid-morning snack</td>
+            </tr>
+            <tr th:each="entry : ${entriesM}" th:insert="~{fragments/journalTable :: journalTableFragment}"></tr>
+            <tr th:unless="${#lists.isEmpty(entriesL)}">
+                <td colspan="8" class="bg-light fw-bold" th:text="Lunch">Lunch</td>
+            </tr>
+            <tr th:each="entry : ${entriesL}" th:insert="~{fragments/journalTable :: journalTableFragment}"></tr>
+            <tr th:unless="${#lists.isEmpty(entriesA)}">
+                <td colspan="8" class="bg-light fw-bold" th:text="'Afternoon snack'">Afternoon snack</td>
+            </tr>
+            <tr th:each="entry : ${entriesA}" th:insert="~{fragments/journalTable :: journalTableFragment}"></tr>
+            <tr th:unless="${#lists.isEmpty(entriesD)}">
+                <td colspan="8" class="bg-light fw-bold" th:text="Dinner">Dinner</td>
+            </tr>
+            <tr th:each="entry : ${entriesD}" th:insert="~{fragments/journalTable :: journalTableFragment}"></tr>
+            </tbody>
+            <tfoot th:unless="${#lists.isEmpty(entriesB) && #lists.isEmpty(entriesM) && #lists.isEmpty(entriesL) && #lists.isEmpty(entriesA) && #lists.isEmpty(entriesD)}">
+            <tr>
+                <th class="col-left bg-light">Total</th>
+                <th class="col-center bg-light">Quantity</th>
+                <th class="col-center bg-light">Kilojoules</th>
+                <th class="col-center bg-light">Proteins</th>
+                <th class="col-center bg-light">Carbohydrates</th>
+                <th class="col-center bg-light">Fiber</th>
+                <th class="col-center bg-light">Fat</th>
+                <th class="col-right bg-light"></th>
+            </tr>
+            <tr>
+                <td class="col-center"></td>
+                <td class="col-right" th:text="${dayTotals.getTotalQuantity()}">Total Quantity</td>
+                <td class="col-right" th:text="${dayTotals.getTotalKiloJoules()}">Total kiloJoules</td>
+                <td class="col-right" th:text="${dayTotals.getTotalProteins()}">Total Proteins</td>
+                <td class="col-right" th:text="${dayTotals.getTotalCarbohydrates()}">Total Carbohydrates</td>
+                <td class="col-right" th:text="${dayTotals.getTotalFiber()}">Total Fiber</td>
+                <td class="col-right" th:text="${dayTotals.getTotalFat()}">Total Fat</td>
+                <td class="col-center">
+                    <a class="btn btn-warning" th:href="@{'/journal/statistics'}" th:text="Statistics">Statistics</a>
+                </td>
+            </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+</body>
+</html>

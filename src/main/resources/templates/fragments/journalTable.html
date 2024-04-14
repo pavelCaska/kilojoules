@@ -1,0 +1,18 @@
+<div xmlns:th="http://www.thymeleaf.org/" th:fragment="journalTableFragment">
+    <td class="col-left">
+        <a th:href="@{'/journal/' + ${entry.getFoodId() != null ? entry.getId() + '/food/' + entry.getFoodId() + '/edit' :  entry.getId() + '/meal/' + entry.getMealId() + '/edit'}}" >
+            <span th:text="${entry.getName()}">Food name or Meal name</span>
+        </a>
+    </td>
+    <td class="col-right" th:text="${entry.getQuantity()}"></td>
+    <td class="col-right" th:text="${entry.getKiloJoules()}"></td>
+    <td class="col-right" th:text="${entry.getProteins()}"></td>
+    <td class="col-right" th:text="${entry.getCarbohydrates()}"></td>
+    <td class="col-right" th:text="${entry.getFiber()}"></td>
+    <td class="col-right" th:text="${entry.getFat()}"></td>
+    <td class="col-center">
+        <form th:action="@{/journal/{Id}/delete(Id=${entry.id})}" th:method="post">
+            <button type="submit" class="btn btn-danger">Delete</button>
+        </form>
+    </td>
+</div>

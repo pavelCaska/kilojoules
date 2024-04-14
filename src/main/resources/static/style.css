@@ -1,0 +1,27 @@
+body {
+    background-color: antiquewhite;
+}
+.fit-content {
+    width: 1%;
+    white-space: nowrap;
+}
+.col-center {
+    text-align: center;
+}
+.col-right {
+    text-align: right;
+}
+a {
+    text-decoration: none;
+    color: inherit;
+}
+a:hover {
+    text-decoration: underline;
+}
+a.btn:hover {
+    text-decoration: none;
+}
+.error {
+    background-color: red;
+    color: white;
+}

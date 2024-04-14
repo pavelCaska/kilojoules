@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" th:href="@{/style.css}"/>
+    <title>Journal</title>
+</head>
+<body>
+<div class="container p-3 my-5">
+    <h1 class="display-5 border-bottom" th:text="'Nutrition Journal - adding new meal'">Nutrition Journal</h1>
+    <div th:insert="~{fragments/messages :: messagesFragment}"></div>
+
+    <div class="row mt-3 mb-1">
+        <div class="col-md-12">
+            <h2 th:text="${jm.mealName} "></h2>
+            <table class="table table-striped">
+                <thead th:insert="~{fragments/table-secondary-thead :: theadFragment}"></thead>
+                <tbody>
+                <tr>
+                    <td class="col-left">Totals - of which:</td>
+                    <td class="col-right" th:text="${jm.getQuantity}">SumQuantity</td>
+                    <td class="col-right" th:text="${jm.getKiloJoules}">SumKilojoules</td>
+                    <td class="col-right" th:text="${jm.getProteins}">SumProteins</td>
+                    <td class="col-right" th:text="${jm.getCarbohydrates}">SumCarbohydrates</td>
+                    <td class="col-right" th:text="${jm.getFiber}">SumFiber</td>
+                    <td class="col-right" th:text="${jm.getFat}">SumFat</td>
+                </tr>
+                <tr th:each="jmf : ${jm.journalMealFoods}">
+                    <td class="col-left" th:text="${jmf.getName()}"></td>
+                    <td class="col-right" th:text="${jmf.getQuantity()}"></td>
+                    <td class="col-right" th:text="${jmf.getKiloJoules()}"></td>
+                    <td class="col-right" th:text="${jmf.getProteins()}"></td>
+                    <td class="col-right" th:text="${jmf.getCarbohydrates()}"></td>
+                    <td class="col-right" th:text="${jmf.getFiber()}"></td>
+                    <td class="col-right" th:text="${jmf.getFat()}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <form th:action="@{/journal/meal/{mealId}/food/{Id}/edit(mealId=${jm.id}, Id=(${jmf.id}))}" th:method="post" th:object="${formDTO}" class="was-validated pt-3">
+        <div class="row mt-3 d-flex justify-content-evenly">
+            <div class="col-md-6 form-group">
+                <label for="food">Food to be edited</label>
+                <input id="food" type="text" name="foodName" th:value="${jmf.getName()}" th:field="*{foodName}" class="form-control"
+                       maxlength="255" required pattern=".*\S+.*">
+                <div class="invalid-feedback">Food name cannot be empty.</div>
+            </div>
+            <div class="col-md-3 form-group">
+                <label for="portions">Portion</label>
+                <select id="portions" name="portionSize" class="form-control" size="3" required>
+                    <option th:each="portion : ${jmf.getPortions()}" th:value="${portion.portionSize}" th:field="*{portionSize}"
+                            th:text="${portion.portionName}"></option>
+                </select>
+                <div class="invalid-feedback">Please select the portion unit.</div>
+            </div>
+            <div class="col-md-3 form-group">
+                <label for="quantity">Quantity</label>
+                <input type="number" id="quantity" name="quantity" class="form-control" step="0.01" th:field="*{quantity}" required/>
+                <div class="invalid-feedback">Please provide a valid quantity.</div>
+            </div>
+        </div>
+
+        <div th:insert="~{fragments/journalButtons :: journalButtonsFragment}"></div>
+    </form>
+</div>
+</body>
+</html>

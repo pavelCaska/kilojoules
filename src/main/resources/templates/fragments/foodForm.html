@@ -1,0 +1,85 @@
+<div xmlns:th="http://www.thymeleaf.org/" th:fragment="foodFormFragment">
+    <div class="row mt-4 d-flex justify-content-between">
+        <div class="row mt-3">
+            <div class="col-md-12 form-group">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" class="form-control" th:field="*{name}" maxlength="255" required pattern=".*\S+.*"/>
+                <div class="invalid-feedback">Field cannot be empty or contain only whitespaces.</div>
+
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-md-3 form-group">
+                <label for="quantity">Quantity [g]</label>
+                <input type="number" id="quantity" name="quantity" class="form-control" th:field="*{quantity}" step="0.01" th:style="'background-color: white;'" disabled required/>
+                <div class="invalid-feedback">Please enter a number. You can also include up to 2 decimal places.</div>
+            </div>
+            <div class="col-md-3 form-group">
+                <label for="kiloJoules">kJ</label>
+                <input type="number" id="kiloJoules" name="kiloJoules" class="form-control" th:field="*{kiloJoules}" step="0.01" required/>
+                <div class="invalid-feedback">Please enter a number. You can also include up to 2 decimal places.</div>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-md-3 form-group">
+                <label for="proteins">Proteins [g]</label>
+                <input type="number" id="proteins" name="proteins" class="form-control" th:field="*{proteins}" step="0.01" required/>
+                <div class="invalid-feedback">Please enter a number. You can also include up to 2 decimal places.</div>
+            </div>
+            <div class="col-md-3 form-group">
+                <label for="carbohydrates">Carbohydrates [g]</label>
+                <input type="number" id="carbohydrates" name="carbohydrates" class="form-control" th:field="*{carbohydrates}" step="0.01" required/>
+                <div class="invalid-feedback">Please enter a number. You can also include up to 2 decimal places.</div>
+            </div>
+            <div class="col-md-3 form-group">
+                <label for="sugar">Sugar [g]</label><br>
+                <input type="number" id="sugar" name="sugar" class="form-control" th:field="*{sugar}" step="0.01" required/>
+                <div class="invalid-feedback">Please enter a number. You can also include up to 2 decimal places.</div>
+            </div>
+            <div class="col-md-3 form-group">
+                <label for="fiber">Fiber [g]</label>
+                <input type="number" id="fiber" name="fiber" class="form-control" th:field="*{fiber}" step="0.01" required/>
+                <div class="invalid-feedback">Please enter a number. You can also include up to 2 decimal places.</div>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-md-3 form-group">
+                <label for="fat">Fat [g]</label>
+                <input type="number" id="fat" name="fat" class="form-control" th:field="*{fat}" step="0.01" required/>
+                <div class="invalid-feedback">Please enter a number. You can also include up to 2 decimal places.</div>
+            </div>
+            <div class="col-md-3 form-group">
+                <label for="safa">Saturated fatty acids [g]</label>
+                <input type="number" id="safa" name="safa" class="form-control" th:field="*{safa}" step="0.01" required/>
+                <div class="invalid-feedback">Please enter a number. You can also include up to 2 decimal places.</div>
+            </div>
+            <div class="col-md-3 form-group">
+                <label for="tfa">Trans fatty acids [g]</label>
+                <input type="number" id="tfa" name="tfa" class="form-control" th:field="*{tfa}" step="0.01" required/>
+                <div class="invalid-feedback">Please enter a number. You can also include up to 2 decimal places.</div>
+            </div>
+            <div class="col-md-3 form-group">
+                <label for="cholesterol">Cholesterol [mg]</label>
+                <input type="number" id="cholesterol" name="cholesterol" class="form-control" th:field="*{cholesterol}" step="0.01" required/>
+                <div class="invalid-feedback">Please enter a number. You can also include up to 2 decimal places.</div>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-md-3 form-group">
+                <label for="sodium">Sodium [g]</label>
+                <input type="number" id="sodium" name="sodium" class="form-control" th:field="*{sodium}" step="0.01" required/>
+                <div class="invalid-feedback">Please enter a number. You can also include up to 2 decimal places.</div>
+            </div>
+            <div class="col-md-3 form-group">
+                <label for="calcium">Calcium [g]</label>
+                <input type="number" id="calcium" name="calcium" class="form-control" th:field="*{calcium}" step="0.01" required/>
+                <div class="invalid-feedback">Please enter a number. You can also include up to 2 decimal places.</div>
+            </div>
+            <div class="col-md-3 form-group">
+                <label for="phe">PHE [mg]</label>
+                <input type="number" id="phe" name="phe" class="form-control" th:field="*{phe}" step="0.01" required/>
+                <div class="invalid-feedback">Please enter a number. You can also include up to 2 decimal places.</div>
+            </div>
+        </div>
+    </div>
+</div>

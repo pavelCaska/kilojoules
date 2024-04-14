@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" th:href="@{/style.css}"/>
+    <title>Listing meals</title>
+</head>
+<body>
+<div class="container p-3 my-5">
+    <h1 class="display-5 border-bottom">Available meals</h1>
+    <div class="row mt-3 mb-3 d-flex justify-content-between">
+        <div class="col-md-3">
+            <a class="btn btn-secondary w-100" th:href="@{/food}" th:text="'Go Back'">Go Back</a>
+        </div>
+        <div class="col-md-3">
+            <a class="btn btn-warning w-100" th:href="@{/journal}" th:text="'Journal'">New food</a>
+        </div>
+        <div class="col-md-3">
+            <a class="btn btn-primary w-100" th:href="@{/meal/create}" th:text="'Create new meal'">Create new meal</a>
+        </div>
+    </div>
+
+    <div th:insert="~{fragments/messages :: messagesFragment}"></div>
+
+    <div class="table-responsive-xxl">
+        <table class="table table-hover">
+            <thead th:insert="~{fragments/table-secondary-thead-button :: theadButtonFragment}"></thead>
+            <tbody>
+                <tr th:each="meal : ${mealsDTO}">
+                    <td>
+                        <a th:href="@{'/meal/' + ${meal.getMealId()} + '/edit'}" th:text="${meal.getMealName()}">name</a>
+                    </td>
+                    <td class="col-right" th:text="${meal.getSumQuantity()}">SumQuantity</td>
+                    <td class="col-right" th:text="${meal.getSumAdjustedKiloJoules()}">SumAdjustedKilojoules</td>
+                    <td class="col-right" th:text="${meal.getSumAdjustedProteins()}">SumAdjustedProteins</td>
+                    <td class="col-right" th:text="${meal.getSumAdjustedCarbohydrates()}">SumAdjustedCarbohydrates</td>
+                    <td class="col-right" th:text="${meal.getSumAdjustedFiber()}">SumAdjustedFiber</td>
+                    <td class="col-right" th:text="${meal.getSumAdjustedFat()}">SumAdjustedFat</td>
+                    <td class="col-right">
+                        <form th:action="@{/meal/{id}/delete(id=${meal.getMealId()})}"  th:method="post">
+                            <input type="submit" value="Delete" class="btn btn-danger">
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+            <tfoot>
+            <tr>
+                <td colspan="4" class="col-left">
+                    <a class="btn btn-secondary" th:if="${currentPage > 0}" th:href="@{/meal(page=${currentPage - 1})}">previous</a>
+                    <span class="btn btn-secondary disabled" th:unless="${currentPage > 0}" th:href="@{/food(page=${currentPage - 1})}">previous</span>
+                </td>
+                <td colspan="4" class="col-right">
+                    <a class="btn btn-secondary" th:if="${currentPage < totalPages - 1}" th:href="@{/meal(page=${currentPage + 1})}">&nbsp;&nbsp;next&nbsp;&nbsp;</a>
+                    <span class="btn btn-secondary disabled" th:unless="${currentPage < totalPages - 1}" th:href="@{/food(page=${currentPage + 1})}">next</span>
+                </td>
+            </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+</body>
+</html>

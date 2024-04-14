@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" th:href="@{/style.css}"/>
+    <title>Search Items for Journal</title>
+</head>
+<body>
+<div class="container p-3 my-5">
+    <h1 class="display-5 border-bottom">Nutrition Journal - Add food or meal</h1>
+
+    <div class="row mt-3 mb-3 d-flex justify-content-between">
+        <div class="col-md-3">
+            <a class="btn btn-secondary w-100" th:href="@{/journal}" th:text="'Back to Journal'">Back to Journal</a>
+        </div>
+        <div class="col-md-3">
+            <a class="btn btn-warning w-100" th:href="@{/food}" th:text="'Food list'">Go Back</a>
+        </div>
+        <div class="col-md-3">
+            <a class="btn btn-primary w-100" th:href="@{/meal}" th:text="'Meal list'">Create new meal</a>
+        </div>
+    </div>
+
+    <div th:insert="~{fragments/messages :: messagesFragment}"></div>
+
+    <form th:action="@{/journal/search}" th:method="get">
+        <label for="query">Search food or meal</label>
+        <div class="input-group mb-3">
+            <input type="text" id="query" name="query" class="form-control" maxlength="75" required pattern=".*\S+.*"/>
+            <input type="submit" value="Search" class="btn btn-primary">
+            <input type="reset" value="Reset" class="btn btn-secondary">
+        </div>
+    </form>
+
+    <div class="row mt-3 mb-3">
+        <div class="col-md-12">
+            <div th:unless="${#lists.isEmpty(foodResults)}">
+                <h3>Food Results</h3>
+                <div class="table-responsive-xxl">
+                    <table class="table table-striped">
+                        <thead th:insert="~{fragments/table-secondary-thead-button :: theadButtonFragment}"></thead>
+                        <tbody>
+                        <tr th:each="food : ${foodResults}">
+                            <td class="col-md-3" th:text="${food.name}"></td>
+                            <td class="col-right" th:text="${food.getQuantity}"></td>
+                            <td class="col-right" th:text="${food.kiloJoules}"></td>
+                            <td class="col-right" th:text="${food.proteins}"></td>
+                            <td class="col-right" th:text="${food.carbohydrates}"></td>
+                            <td class="col-right" th:text="${food.fiber}"></td>
+                            <td class="col-right" th:text="${food.fat}"></td>
+                            <td>
+                                <a th:href="@{/journal/food/{Id}/add(Id=${food.id})}" th:text="Add"
+                                   class="btn btn-primary">Add</a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div th:unless="${#lists.isEmpty(mealResults)}">
+                <h3>Meal Results</h3>
+                <div class="table-responsive-xxl">
+                    <table class="table table-striped">
+                        <thead th:insert="~{fragments/table-secondary-thead-button :: theadButtonFragment}"></thead>
+                        <tbody>
+                        <tr th:each="meal : ${mealResults}">
+                            <td class="col-md-3" th:text="${meal.getMealName()}"></td>
+                            <td class="col-right" th:text="${meal.getSumQuantity()}"></td>
+                            <td class="col-right" th:text="${meal.getSumAdjustedKiloJoules()}"></td>
+                            <td class="col-right" th:text="${meal.getSumAdjustedProteins()}"></td>
+                            <td class="col-right" th:text="${meal.getSumAdjustedCarbohydrates()}"></td>
+                            <td class="col-right" th:text="${meal.getSumAdjustedFiber()}"></td>
+                            <td class="col-right" th:text="${meal.getSumAdjustedFat()}"></td>
+                            <td>
+                                <form th:action="@{/journal/meal/{Id}/add(Id=${meal.getMealId()})}" th:method="post">
+                                    <input type="submit" value="Add" class="btn btn-primary"/>
+                                </form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+</body>
+</html>
+

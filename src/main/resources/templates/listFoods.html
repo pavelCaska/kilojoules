@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" th:href="@{/style.css}"/>
+    <title>Listing food</title>
+</head>
+<body>
+<div class="container p-3 my-5">
+    <h1 class="display-5 border-bottom">Available food items</h1>
+    <div class="row mt-3 mb-3 justify-content-between">
+        <div class="col-md-3">
+            <a class="btn btn-secondary w-100" th:href="@{/meal}" th:text="'Meal list'">Meal list</a>
+        </div>
+        <div class="col-md-3">
+            <a class="btn btn-warning w-100" th:href="@{/journal}" th:text="'Journal'">New food</a>
+        </div>
+        <div class="col-md-3">
+            <a class="btn btn-primary w-100" th:href="@{/food/create}" th:text="'New food'">New food</a>
+        </div>
+    </div>
+
+    <div th:insert="~{fragments/messages :: messagesFragment}"></div>
+
+    <div class="table-responsive-xxl">
+        <table class="table table-hover">
+            <thead class="table-secondary">
+                <tr>
+                    <th class="col-center">Název</th>
+                    <th class="col-center">Množství</th>
+                    <th class="col-center">kJ</th>
+                    <th class="col-center">Bílkoviny [g]</th>
+                    <th class="col-center">Sacharidy [g] </th>
+                    <th class="col-center">Cukry [g]</th>
+                    <th class="col-center">Vláknina [g]</th>
+                    <th class="col-center">Tuky [g]</th>
+                    <th class="col-center">SAFA [g]</th>
+                    <th class="col-center">TFA [g]</th>
+                    <th class="col-center">Cholesterol [mg]</th>
+                    <th class="col-center">Sodík [mg]</th>
+                    <th class="col-center">Vápník [g]</th>
+                    <th class="col-center">PHE [mg]</th>
+                    <th class="col-center">Datum</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="food : ${foods}">
+                    <td><a th:href="@{'/food/' + ${food.getId()} + '/edit'}" th:text="${food.getName()}">name</a></td>
+                    <td class="col-center" th:text="${#numbers.formatDecimal(food.getQuantity(), 0, 'POINT', 0, 'COMMA') + ' g'}">amount</td>
+                    <td class="col-right" th:text="${#numbers.formatDecimal(food.getKiloJoules(), 0, 'POINT', 0, 'COMMA')}" >Kj</td>
+                    <td class="col-right" th:text="${#numbers.formatDecimal(food.getProteins(), 1, 2, 'COMMA')}">protein</td>
+                    <td class="col-right" th:text="${#numbers.formatDecimal(food.getCarbohydrates(), 1, 2, 'COMMA')}">carbs</td>
+                    <td class="col-right" th:text="${#numbers.formatDecimal(food.getSugar(), 1, 2, 'COMMA')}">sugar</td>
+                    <td class="col-right" th:text="${#numbers.formatDecimal(food.getFiber(), 1, 2, 'COMMA')}">fiber</td>
+                    <td class="col-right" th:text="${#numbers.formatDecimal(food.getFat(), 1, 2, 'COMMA')}">fat</td>
+                    <td class="col-right" th:text="${#numbers.formatDecimal(food.getSafa(), 1, 2, 'COMMA')}">safa</td>
+                    <td class="col-right" th:text="${#numbers.formatDecimal(food.getTfa(), 1, 2, 'COMMA')}">tfa</td>
+                    <td class="col-right" th:text="${#numbers.formatDecimal(food.getCholesterol(), 1, 2, 'COMMA')}">cholesterol</td>
+                    <td class="col-right" th:text="${#numbers.formatDecimal(food.getSodium(), 1, 2, 'COMMA')}">sodium</td>
+                    <td class="col-right" th:text="${#numbers.formatDecimal(food.getCalcium(), 1, 2, 'COMMA')}">calcium</td>
+                    <td class="col-right" th:text="${#numbers.formatDecimal(food.getPhe(), 1, 2, 'COMMA')}">phe</td>
+                    <td class="fit-content" th:text="${#dates.format(food.getUpdatedAt(), 'dd.MM.yyyy')}">Datum</td>
+                </tr>
+            </tbody>
+                <tfoot>
+                <tr>
+                    <td colspan="7" class="col-left">
+                        <a class="btn btn-secondary" th:if="${currentPage > 0}" th:href="@{/food(page=${currentPage - 1})}">previous</a>
+                        <span class="btn btn-secondary disabled" th:unless="${currentPage > 0}" th:href="@{/food(page=${currentPage - 1})}">previous</span>
+                    </td>
+                    <td colspan="8" class="col-right">
+                        <a class="btn btn-secondary" th:if="${currentPage < totalPages - 1}" th:href="@{/food(page=${currentPage + 1})}">next</a>
+                        <span class="btn btn-secondary disabled" th:unless="${currentPage < totalPages - 1}" th:href="@{/food(page=${currentPage + 1})}">next</span>
+                    </td>
+                </tr>
+                </tfoot>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>

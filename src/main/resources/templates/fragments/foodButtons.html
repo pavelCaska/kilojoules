@@ -1,0 +1,13 @@
+<div xmlns:th="http://www.thymeleaf.org/" th:fragment="foodButtonsFragment">
+    <div class="row mt-4 d-flex justify-content-between">
+        <div class="col-md-3">
+            <a class="btn btn-secondary w-100" th:href="@{/food}" th:text="'Go Back'">Go Back</a>
+        </div>
+        <div class="col-md-3">
+            <button type="reset" class="btn btn-warning w-100">Reset</button>
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-success w-100">Submit</button>
+        </div>
+    </div>
+</div>

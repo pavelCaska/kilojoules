@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" th:href="@{/style.css}"/>
+    <title>Statistics</title>
+</head>
+<body>
+<div class="container p-3 my-5">
+    <h1 class="display-5 border-bottom"
+        th:text="'Nutrition statistics for the period'">Nutrition statistics</h1>
+
+        <div th:insert="~{fragments/messages :: messagesFragment}"></div>
+
+
+    <div class="row mb-lg-2">
+        <div class="col-md-4">
+            <div class="col-md-6">
+                <a class="btn btn-secondary w-100" th:href="@{/journal}" th:text="'Back to Journal'">Back to Journal</a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <form th:action="@{/journal/statistics}" th:method="get" class="was-validated">
+                <div class="row mb-lg-2">
+                    <div class="form-group col-lg-6">
+                        <label class="" for="from">from</label>
+                        <input class="form-control" type="date" name="startDate" id="from" th:value="${startDate}"
+                               required>
+                    </div>
+                    <div class="form-group col-lg-6">
+                        <label class="" for="to">to</label>
+                        <input class="form-control" type="date" name="endDate" id="to" th:value="${endDate}" required>
+                    </div>
+                </div>
+                <div class="row justify-content-center">
+                    <div class="col-md-6">
+                        <input class="btn btn-primary w-100" type="submit" value="Go">
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-4 offset"></div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 offset"></div>
+        <div class="col-md-4">
+            <table class="table table-striped">
+                <thead class="table-secondary">
+                <tr>
+                    <th class="col-center"></th>
+                    <th class="col-center" colspan="2">Average per Day</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>Quantity</td>
+                    <td class="col-right" th:text="${periodTotals.getAvgQuantity()} + ' g'"></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>KiloJoules</td>
+                    <td class="col-right" th:text="${periodTotals.getAvgKiloJoules()} + ' kJ'"></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Proteins</td>
+                    <td class="col-right" th:text="${periodTotals.getAvgProteins()} + ' g'"></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Carbohydrates</td>
+                    <td class="col-right" th:text="${periodTotals.getAvgCarbohydrates()} + ' g'"></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Fiber</td>
+                    <td class="col-right" th:text="${periodTotals.getAvgFiber()} + ' g'"></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Fat</td>
+                    <td class="col-right" th:text="${periodTotals.getAvgFat()} + ' g'"></td>
+                    <td></td>
+                </tr>
+                </tbody>
+            </table>
+            <!--            </div>-->
+        </div>
+        <div class="col-md-4 offset"></div>
+    </div>
+    <h2 class="display-6 border-bottom">Simple breakdown</h2>
+    <div class="row">
+        <div class="col-md-4">
+            <table class="table table-striped">
+                <thead class="table-secondary">
+                <tr>
+                    <th class="col-center"></th>
+                    <th class="col-center" colspan="2">Energy in kJ</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="top : ${topKiloJoules}">
+                    <td th:text="${top.getName()}">Food or Meal name</td>
+                    <td class="col-right" th:text="${top.getKiloJoules()}">Amount in g</td>
+                    <td></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-4">
+            <table class="table table-striped">
+                <thead class="table-secondary">
+                <tr>
+                    <th class="col-center"></th>
+                    <th class="col-center" colspan="2">Proteins [g]</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="top : ${topProteins}">
+                    <td th:text="${top.getName()}">Food or Meal name</td>
+                    <td class="col-right" th:text="${top.getProteins()}">Amount in g</td>
+                    <td></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-4">
+            <table class="table table-striped">
+                <thead class="table-secondary">
+                <tr>
+                    <th class="col-center"></th>
+                    <th class="col-center" colspan="2">Carbohydrates [g]</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="top : ${topCarbs}">
+                    <td th:text="${top.getName()}">Food or Meal name</td>
+                    <td class="col-right" th:text="${top.getCarbohydrates()}">Amount in g</td>
+                    <td></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <table class="table table-striped">
+                <thead class="table-secondary">
+                <tr>
+                    <th class="col-center"></th>
+                    <th class="col-center" colspan="2">Fiber [g]</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="top : ${topFiber}">
+                    <td th:text="${top.getName()}">Food or Meal name</td>
+                    <td class="col-right" th:text="${top.getFiber()}">Amount in g</td>
+                    <td></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-4">
+            <table class="table table-striped">
+                <thead class="table-secondary">
+                <tr>
+                    <th class="col-center"></th>
+                    <th class="col-center" colspan="2">Fat [g]</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="top : ${topFat}">
+                    <td th:text="${top.getName()}">Food or Meal name</td>
+                    <td class="col-right" th:text="${top.getFat()}">Amount in g</td>
+                    <td></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <h2 class="display-6 border-bottom">Advanced statistics</h2>
+    <div class="row">
+        <div class="col-md-4">
+            <table class="table table-striped">
+                <thead class="table-secondary">
+                <tr>
+                    <th class="col-left"></th>
+                    <th class="col-center"></th>
+                    <th class="col-center" colspan="2">Energy in kJ</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="top : ${topKiloJoulesCount}">
+                    <td class="col-left" th:text="${top.getCount()} + 'x'"></td>
+                    <td th:text="${top.getName()}">Food or Meal name</td>
+                    <td class="col-right" th:text="${top.getKiloJoules()}">Amount in g</td>
+                    <td></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-4">
+            <table class="table table-striped">
+                <thead class="table-secondary">
+                <tr>
+                    <th class="col-left"></th>
+                    <th class="col-center"></th>
+                    <th class="col-center" colspan="2">Proteins [g]</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="top : ${topProteinsCount}">
+                    <td class="col-left" th:text="${top.getCount()} + 'x'"></td>
+                    <td th:text="${top.getName()}">Food or Meal name</td>
+                    <td class="col-right" th:text="${top.getProteins()}">Amount in g</td>
+                    <td></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-4">
+            <table class="table table-striped">
+                <thead class="table-secondary">
+                <tr>
+                    <th class="col-left"></th>
+                    <th class="col-center"></th>
+                    <th class="col-center" colspan="2">Carbohydrates [g]</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="top : ${topCarbsCount}">
+                    <td class="col-left" th:text="${top.getCount()} + 'x'"></td>
+                    <td th:text="${top.getName()}">Food or Meal name</td>
+                    <td class="col-right" th:text="${top.getCarbohydrates()}">Amount in g</td>
+                    <td></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <table class="table table-striped">
+                <thead class="table-secondary">
+                <tr>
+                    <th class="col-left"></th>
+                    <th class="col-center"></th>
+                    <th class="col-center" colspan="2">Fiber [g]</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="top : ${topFiberCount}">
+                    <td class="col-left" th:text="${top.getCount()} + 'x'"></td>
+                    <td th:text="${top.getName()}">Food or Meal name</td>
+                    <td class="col-right" th:text="${top.getFiber()}">Amount in g</td>
+                    <td></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-4">
+            <table class="table table-striped">
+                <thead class="table-secondary">
+                <tr>
+                    <th class="col-left"></th>
+                    <th class="col-center"></th>
+                    <th class="col-center" colspan="2">Fat [g]</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="top : ${topFatCount}">
+                    <td class="col-left" th:text="${top.getCount()} + 'x'"></td>
+                    <td th:text="${top.getName()}">Food or Meal name</td>
+                    <td class="col-right" th:text="${top.getFat()}">Amount in g</td>
+                    <td></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>

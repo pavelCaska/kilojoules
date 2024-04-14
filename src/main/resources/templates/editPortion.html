@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" th:href="@{/style.css}"/>
+    <title>Food</title>
+</head>
+<body>
+<div class="container p-3 my-5">
+    <h1 class="display-5 border-bottom">Add portion to food item</h1>
+    <div class="row mt-3 mb-3 d-flex justify-content-start">
+    </div>
+
+    <div th:insert="~{fragments/messages :: messagesFragment}"></div>
+
+    <div class="row mt-3">
+        <div class="col-md-12 form-group">
+            <label for="name">Food name</label>
+            <input type="text" id="name" name="name" class="form-control" th:value="${food.getName()}" disabled th:style="'background-color: white;'"/>
+        </div>
+    </div>
+
+    <table class="mt-2 table table-hover">
+        <thead class="table-secondary">
+            <tr>
+                <th th:style="'border-top-left-radius: 5px;'">Portion name</th>
+                <th>Quantity</th>
+                <th th:style="'border-top-right-radius: 5px;'"></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="portion : ${portions}">
+                <td th:text="${portion.getPortionName()}"></td>
+                <td th:text="${portion.getPortionSize()}"></td>
+                <td class="d-flex justify-content-end">
+                    <form th:action="@{/food/{foodId}/portion/{id}/delete(foodId=${food.getId()}, id=${portion.getId()})}"  th:method="post">
+                        <input type="submit" value="Delete" class="btn btn-danger">
+                    </form>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <form th:action="@{/food/{id}/portion(id=${food.getId()})}" th:method="post" th:object="${portion}" class="was-validated pt-3">
+        <div class="row mt-3">
+            <div class="col-md-3 form-group">
+                <label for="portionName">Portion name</label>
+                <input type="text" id="portionName" name="portionName" class="form-control" th:field="*{portionName}" maxlength="55" required pattern=".*\S+.*"/>
+                <div class="invalid-feedback">Please enter the name of the portion.</div>
+            </div>
+
+            <div class="col-md-3 form-group">
+                <label for="portionSize">Quantity [g]</label>
+                <input type="number" id="portionSize" name="portionSize" class="form-control" th:field="*{portionSize}" step="0.01" oninvalid="this.setCustomValidity(' ')" required/>
+                <div class="invalid-feedback">Please enter a valid quantity.</div>
+            </div>
+        </div>
+        <div th:insert="~{fragments/foodButtons :: foodButtonsFragment}"></div>
+    </form>
+</div>
+</body>
+</html>
