@@ -2,10 +2,12 @@ package com.pc.kilojoules.services;
 
 import com.pc.kilojoules.entities.Food;
 import com.pc.kilojoules.entities.Portion;
+import com.pc.kilojoules.exceptions.RecordNotDeletableException;
 import com.pc.kilojoules.exceptions.RecordNotFoundException;
 import com.pc.kilojoules.repositories.FoodRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,10 +24,12 @@ import static com.pc.kilojoules.constant.Constant.ONE_HUNDRED;
 @Service
 public class FoodServiceImpl implements FoodService {
     private final FoodRepository foodRepository;
+    private final MealFoodService mealFoodService;
 
     @Autowired
-    public FoodServiceImpl(FoodRepository foodRepository) {
+    public FoodServiceImpl(FoodRepository foodRepository, @Lazy MealFoodService mealFoodService) {
         this.foodRepository = foodRepository;
+        this.mealFoodService = mealFoodService;
     }
 
     @Override
@@ -72,6 +76,9 @@ public class FoodServiceImpl implements FoodService {
     @Override
     @Transactional
     public Food deleteFoodById(Long id) {
+        if(mealFoodService.isFoodAssociatedToMealFood(id)) {
+            throw new RecordNotDeletableException("Food with id: " + id + " is associated to a meal and cannot be deleted.");
+        }
         Food food = foodRepository.findById(id).orElseThrow(() -> new RecordNotFoundException("Food record with id " + id + " does not exist!"));
         foodRepository.delete(food);
         return food;

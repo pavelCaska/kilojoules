@@ -16,4 +16,6 @@ public interface MealFoodService {
     boolean existsMealFoodByMealIdAndId(Long mealId, Long foodId);
 
     MealFood updateMealFood(Long mealId, Long foodId, MealFormDTO mealFormDTO);
+
+    boolean isFoodAssociatedToMealFood(Long foodId);
 }

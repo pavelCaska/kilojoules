@@ -1,6 +1,7 @@
 package com.pc.kilojoules.controllers;
 
 import com.pc.kilojoules.entities.Food;
+import com.pc.kilojoules.exceptions.RecordNotDeletableException;
 import com.pc.kilojoules.exceptions.RecordNotFoundException;
 import com.pc.kilojoules.services.FoodService;
 import jakarta.persistence.EntityNotFoundException;
@@ -118,7 +119,7 @@ public class FoodController {
             Food food = foodService.deleteFoodById(id);
             redirectAttributes.addFlashAttribute("successMessage", "Food \"" + food.getName() + "\" deleted.");
             return "redirect:/food";
-        } catch (RecordNotFoundException e) {
+        } catch (RecordNotFoundException | RecordNotDeletableException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         } catch (DataAccessException e) {
             log.error("Database access error:", e);

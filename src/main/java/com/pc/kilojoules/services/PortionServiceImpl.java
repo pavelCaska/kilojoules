@@ -32,16 +32,11 @@ public class PortionServiceImpl implements PortionService {
                 throw new RecordNameExistsException("Portion name already exists for this food.");
             }
         }
-        Portion newPortion = Portion.builder()
-                .portionName(portion.getPortionName())
-                .portionSize(portion.getPortionSize())
-                .food(food)
-                .build();
-        portionRepository.save(newPortion);
-        portionList.add(newPortion);
+        portionRepository.save(portion);
+        portionList.add(portion);
         food.setPortions(portionList);
         foodService.saveFood(food);
-        return newPortion;
+        return portion;
     }
 
     @Override

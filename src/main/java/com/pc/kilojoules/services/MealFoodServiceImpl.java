@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 public class MealFoodServiceImpl implements MealFoodService {
@@ -64,5 +65,11 @@ public class MealFoodServiceImpl implements MealFoodService {
         mealFoodRepository.save(mealFood);
         mealService.save(meal);
         return mealFood;
+    }
+
+    @Override
+    public boolean isFoodAssociatedToMealFood(Long foodId) {
+        List<MealFood> mealFoodList = mealFoodRepository.findMealFoodByFoodId (foodId);
+        return !mealFoodList.isEmpty();
     }
 }
