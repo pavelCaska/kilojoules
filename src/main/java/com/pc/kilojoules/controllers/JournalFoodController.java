@@ -118,10 +118,6 @@ public class JournalFoodController {
             redirectAttributes.addFlashAttribute("errorMessage", "Validation failed.");
             return "redirect:/journal/food/" + id + "/edit";
         }
-        if(!journalService.existsJournalByIdAndJournalFoodId(journalId, id)) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Food record with id " + id + " is not associated with Journal record with id " + journalId);
-            return "redirect:/journal";
-        }
         try {
             BigDecimal savedQuantity = formDTO.getQuantity().multiply(formDTO.getPortionSize());
             Journal journal = journalService.updateJournalFood(journalId, savedQuantity, formDTO.getDate(), formDTO.getMealType(), formDTO.getFoodName());
